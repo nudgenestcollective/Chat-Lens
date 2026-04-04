@@ -1,125 +1,154 @@
-const CONFIDENCE_PHRASES = [
-  "this is a strong idea", "this makes sense", "you're onto something",
-  "you are onto something", "great idea", "excellent point", "absolutely",
-  "brilliant", "fantastic", "spot on", "exactly right", "totally agree",
-  "perfect approach", "great point", "well said", "you're right",
-  "that's a great", "love this idea", "this is genius",
-  "great question", "that's a great question", "you're absolutely right",
-  "you've nailed it", "that's so insightful", "you're very perceptive",
-  "i love that", "i completely agree", "you've clearly thought about this",
-  "this is exciting", "that's innovative",
+/**
+ * Chat Lens — Epistemic Risk Framework (ERF)
+ * 5-dimension scoring engine. Runs on chatgpt.com / chat.openai.com.
+ */
+
+const ABSOLUTE_PHRASES = [
+  "the best way", "the only way", "will always", "always works", "definitely will",
+  "guaranteed to", "without question", "without a doubt", "the most effective",
+  "most effective way", "the right way", "the correct way", "naturally builds",
+  "naturally leads", "naturally creates", "cannot fail", "the best approach",
+  "the best strategy", "the best method", "clearly the", "obviously the",
+  "certainly will", "the proven way", "always the case", "100%",
 ];
 
-const COMMITMENT_PHRASES = [
-  "you should", "this could be a product", "this is a good path forward",
-  "you need to", "i recommend", "the best approach", "this will work",
-  "this is the way", "go ahead and", "definitely do", "without a doubt",
-  "i strongly suggest", "this is definitely", "you must", "the right move",
-  "this is a no-brainer", "you can't go wrong", "there's no reason not to",
-  "just go for it", "move forward with", "this will definitely work",
-  "you've got what it takes", "don't hesitate to",
-  "now is the time", "don't wait", "you don't want to miss this",
-  "this is a rare opportunity",
+const HEDGED_PHRASES = [
+  "may", "might", "could", "sometimes", "it depends", "varies", "in some cases",
+  "can be", "tends to", "not always", "for some people", "in certain situations",
+  "one possibility", "worth exploring", "potentially", "perhaps", "arguably",
 ];
 
-const CRITIQUE_MARKERS = [
-  "however", "on the other hand", "limitation", "uncertain", "but",
-  "although", "caveat", "concern", "drawback", "risk", "challenge",
-  "consideration", "not necessarily", "it depends", "alternatively",
-  "downside", "trade-off", "tradeoff", "worth noting", "keep in mind",
-  "one issue", "potential problem", "may not", "might not",
-  "be aware", "worth considering", "consult a professional", "verify this",
-  "there's no guarantee", "results may vary", "this isn't guaranteed",
-  "you may want to check", "i could be wrong", "seek advice",
-  "do your own research", "speak to a", "talk to a",
+const ANCHORING_PHRASES = [
+  "if you", "for people who", "in your situation", "depending on",
+  "in industries where", "for those who", "given that", "assuming",
+  "in your case", "for your specific", "varies by", "in some workplaces",
+  "not all", "in certain situations", "context-dependent", "your specific",
+  "your particular", "based on your",
 ];
 
-const EVIDENCE_MARKERS = [
+const VAGUE_ANCHORING_PHRASES = [
+  "for most people", "in many cases", "generally speaking", "for most",
+  "in most situations", "for many", "in typical cases", "usually works",
+];
+
+const STRONG_EVIDENCE_PHRASES = [
   "according to", "research shows", "studies suggest", "study shows",
   "data indicates", "evidence suggests", "for example", "for instance",
-  "source:", "cited", "published", "peer-reviewed", "peer reviewed",
-  "statistics show", "survey found", "reported by", "findings show",
-  "researchers found", "clinical trial", "meta-analysis", "journal",
-  "experts say", "scientists found", "based on data", "the evidence",
+  "published", "peer-reviewed", "statistics show", "survey found",
+  "reported by", "findings show", "researchers found", "meta-analysis",
+  "experts say", "scientists found", "based on data", "clinical trial",
+  "a study", "the research", "documented", "proven in", "cited",
 ];
 
-const SENSITIVITY_WEIGHTS = {
-  low:    { confidence: 1,   commitment: 1.5, noCritique: 1,   repetition: 1.5 },
-  medium: { confidence: 2,   commitment: 3,   noCritique: 2,   repetition: 3   },
-  high:   { confidence: 3,   commitment: 4,   noCritique: 3,   repetition: 4   },
-};
+const WEAK_EVIDENCE_PHRASES = [
+  "many people find", "some people", "often reported", "commonly seen",
+  "anecdotally", "in practice", "in my experience", "some experts",
+  "many experts", "widely believed", "often said",
+];
 
-const STOP_WORDS = new Set([
-  "the","a","an","and","or","but","in","on","at","to","for","of","with",
-  "by","from","is","it","this","that","you","your","i","we","can","will",
-  "be","are","was","were","have","has","had","do","does","did","not","as",
-  "if","so","up","out","about","which","when","what","how","also","just",
-  "more","very","would","could","should","may","might","then","than","into",
-  "its","there","their","they","them","these","those","my","our","here",
-]);
+const LIMITING_PHRASES = [
+  "this varies", "it depends", "not always", "may not apply",
+  "consult a professional", "seek advice", "talk to a", "speak to a",
+  "in your specific context", "results may vary", "this isn't guaranteed",
+  "there's no guarantee", "individual results", "not a substitute",
+  "consider your situation", "won't work for everyone", "not universal",
+  "exceptions exist", "this may not", "your mileage may vary",
+];
 
-function matchPhrases(text, phrases) {
+const UNIVERSAL_PHRASES = [
+  "everyone should", "anyone can", "always works", "in any situation",
+  "regardless of", "universally", "no matter what", "works for everyone",
+  "applies to all", "in every case", "without exception",
+];
+
+const SCRIPT_PHRASES = [
+  "say something like", "you might say", "tell them", "you could say",
+  "say to your", "here's what to say", "the exact words", "phrase it as",
+  "words like", "something like", "try saying",
+];
+
+const DIRECTIVE_PHRASES = [
+  "you should", "you must", "you need to", "make sure to",
+  "the first step is", "start by", "begin by", "always do",
+  "never do", "the key is to", "the trick is to", "do this",
+  "follow these steps", "step 1", "step one",
+];
+
+const SENSITIVITY_MULTIPLIERS = { low: 0.7, medium: 1.0, high: 1.3 };
+
+function matchAny(text, phrases) {
   const lower = text.toLowerCase();
-  const matched = [];
-  for (const phrase of phrases) {
-    if (lower.includes(phrase)) matched.push(phrase);
-  }
-  return matched;
+  return phrases.filter(p => lower.includes(p.toLowerCase()));
 }
 
-function findRepeatedKeywords(text) {
-  const words = text.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/)
-    .filter((w) => w.length > 3 && !STOP_WORDS.has(w));
-  const freq = {};
-  for (const w of words) freq[w] = (freq[w] || 0) + 1;
-  return Object.entries(freq).filter(([, c]) => c >= 3).map(([w]) => w);
-}
-
-function computeCAS(text, sensitivity) {
-  const weights = SENSITIVITY_WEIGHTS[sensitivity] || SENSITIVITY_WEIGHTS.medium;
+function computeERF(text, sensitivity) {
   const breakdown = [];
-  let raw = 0;
+  let total = 0;
 
-  const confMatched = matchPhrases(text, CONFIDENCE_PHRASES);
-  if (confMatched.length) {
-    raw += weights.confidence;
-    breakdown.push({ label: "Uses overly confident language", delta: +weights.confidence,
-      detail: confMatched.slice(0,3).map(p=>`"${p}"`).join(", ") });
-  }
+  const absolute = matchAny(text, ABSOLUTE_PHRASES);
+  const hedged   = matchAny(text, HEDGED_PHRASES);
+  const cl = (absolute.length > 0 && hedged.length === 0) ? 2
+           : (hedged.length > 0 && absolute.length === 0) ? 0 : 1;
+  total += cl;
+  breakdown.push({
+    dimension: "Certainty Language", score: cl, max: 2,
+    label: ["Well hedged","Moderately certain","Absolute claims"][cl],
+    detail: cl === 2 ? `Absolute phrases: ${absolute.slice(0,3).map(p=>`"${p}"`).join(", ")}`
+          : cl === 0 ? `Hedged with: ${hedged.slice(0,3).map(p=>`"${p}"`).join(", ")}`
+          : "Mix of certain and hedged language",
+  });
 
-  const commMatched = matchPhrases(text, COMMITMENT_PHRASES);
-  if (commMatched.length) {
-    raw += weights.commitment;
-    breakdown.push({ label: "Tells you what you should do", delta: +weights.commitment,
-      detail: commMatched.slice(0,3).map(p=>`"${p}"`).join(", ") });
-  }
+  const anchored      = matchAny(text, ANCHORING_PHRASES);
+  const vagueAnchored = matchAny(text, VAGUE_ANCHORING_PHRASES);
+  const ca = anchored.length > 0 ? 0 : vagueAnchored.length > 0 ? 1 : 2;
+  total += ca;
+  breakdown.push({
+    dimension: "Context Anchoring", score: ca, max: 2,
+    label: ["Well scoped","Vaguely scoped","No context given"][ca],
+    detail: ca === 0 ? `Scoped with: ${anchored.slice(0,2).map(p=>`"${p}"`).join(", ")}`
+          : ca === 1 ? `Vague scope only: ${vagueAnchored.slice(0,2).map(p=>`"${p}"`).join(", ")}`
+          : "No mention of who this applies to, when, or under what conditions",
+  });
 
-  if (!matchPhrases(text, CRITIQUE_MARKERS).length) {
-    raw -= weights.noCritique;
-    breakdown.push({ label: "Offers no warnings or limitations", delta: -weights.noCritique,
-      detail: 'Missing: "however", "limitation", "on the other hand"...' });
-  }
+  const strongEvid = matchAny(text, STRONG_EVIDENCE_PHRASES);
+  const weakEvid   = matchAny(text, WEAK_EVIDENCE_PHRASES);
+  const eg = strongEvid.length > 0 ? 0 : weakEvid.length > 0 ? 1 : 2;
+  total += eg;
+  breakdown.push({
+    dimension: "Evidence Grounding", score: eg, max: 2,
+    label: ["Evidence cited","Weak evidence only","No evidence cited"][eg],
+    detail: eg === 0 ? `Supported by: ${strongEvid.slice(0,2).map(p=>`"${p}"`).join(", ")}`
+          : eg === 1 ? `Weak signals: ${weakEvid.slice(0,2).map(p=>`"${p}"`).join(", ")}`
+          : "No data, sources, or examples — claims asserted as fact",
+  });
 
-  const repeated = findRepeatedKeywords(text);
-  if (repeated.length) {
-    raw += weights.repetition;
-    breakdown.push({ label: "Repeats ideas to seem more convincing", delta: +weights.repetition,
-      detail: repeated.slice(0,5).map(w=>`"${w}"`).join(", ") });
-  }
+  const limiting  = matchAny(text, LIMITING_PHRASES);
+  const universal = matchAny(text, UNIVERSAL_PHRASES);
+  const ur = limiting.length > 0 ? 0 : universal.length > 0 ? 2 : 1;
+  total += ur;
+  breakdown.push({
+    dimension: "Universality Risk", score: ur, max: 2,
+    label: ["Scope limited","Implied universal","Explicitly universal"][ur],
+    detail: ur === 0 ? `Limits scope with: ${limiting.slice(0,2).map(p=>`"${p}"`).join(", ")}`
+          : ur === 2 ? `Universal framing: ${universal.slice(0,2).map(p=>`"${p}"`).join(", ")}`
+          : "No limiting conditions — implies advice applies to everyone in all situations",
+  });
 
-  // High confidence + no evidence = special warning
-  const hasEvidence = EVIDENCE_MARKERS.some(m => text.toLowerCase().includes(m));
-  const highConfidence = (confMatched.length > 0 || commMatched.length > 0);
-  if (highConfidence && !hasEvidence) {
-    raw += weights.commitment;
-    breakdown.push({
-      label: "High confidence, no evidence cited",
-      delta: +weights.commitment,
-      detail: "This response makes strong claims without citing sources, data, or examples — verify before acting.",
-    });
-  }
+  const scripts    = matchAny(text, SCRIPT_PHRASES);
+  const directives = matchAny(text, DIRECTIVE_PHRASES);
+  const as_ = scripts.length > 0 ? 2 : directives.length > 0 ? 1 : 0;
+  total += as_;
+  breakdown.push({
+    dimension: "Action Specificity Risk", score: as_, max: 2,
+    label: ["Abstract principles","Specific directives","Word-for-word scripts"][as_],
+    detail: as_ === 2 ? `Scripts: ${scripts.slice(0,2).map(p=>`"${p}"`).join(", ")}`
+          : as_ === 1 ? `Directives: ${directives.slice(0,2).map(p=>`"${p}"`).join(", ")}`
+          : "Stays at the level of principles — requires reader judgment",
+  });
 
-  return { score: Math.min(10, Math.max(0, Math.round(raw))), breakdown };
+  const multiplier = SENSITIVITY_MULTIPLIERS[sensitivity] || 1.0;
+  const score = Math.min(10, Math.max(0, Math.round(total * multiplier)));
+  return { score, breakdown };
 }
 
 const BADGE_ATTR = "data-chat-lens-scored";
@@ -136,8 +165,10 @@ function scoreLabel(score) {
   return "Looks balanced";
 }
 
-function createBadge(casResult) {
-  const { score, breakdown } = casResult;
+function dimColor(s) { return s === 0 ? "#43a047" : s === 1 ? "#fb8c00" : "#e53935"; }
+
+function createBadge(erfResult) {
+  const { score, breakdown } = erfResult;
   const wrapper = document.createElement("div");
   wrapper.className = "cl-wrapper";
 
@@ -145,7 +176,11 @@ function createBadge(casResult) {
   badge.className = "cl-badge";
   badge.setAttribute("aria-expanded", "false");
   badge.style.setProperty("--cl-color", badgeColor(score));
-  badge.innerHTML = `<span class="cl-icon">⚠️</span><span class="cl-score">AI Check: ${score}/10</span><span class="cl-level">${scoreLabel(score)}</span><span class="cl-chevron">▾</span>`;
+  badge.innerHTML =
+    `<span class="cl-icon">\u26a0\ufe0f</span>` +
+    `<span class="cl-score">Risk\u00a0${score}/10</span>` +
+    `<span class="cl-level">${scoreLabel(score)}</span>` +
+    `<span class="cl-chevron">\u25be</span>`;
 
   const panel = document.createElement("div");
   panel.className = "cl-panel";
@@ -153,27 +188,23 @@ function createBadge(casResult) {
 
   const title = document.createElement("p");
   title.className = "cl-panel-title";
-  title.textContent = `This response may need a human second opinion`;
+  title.textContent = `Epistemic Risk Score: ${score}/10`;
 
   const list = document.createElement("ul");
   list.className = "cl-list";
 
-  if (!breakdown.length) {
+  for (const dim of breakdown) {
     const li = document.createElement("li");
-    li.textContent = "No significant sycophancy signals detected.";
+    li.className = "cl-item";
+    li.innerHTML =
+      `<span class="cl-delta" style="color:${dimColor(dim.score)}">${dim.score}/${dim.max}</span>` +
+      `<span class="cl-body"><strong>${dim.dimension} \u2014 ${dim.label}</strong><em>${dim.detail}</em></span>`;
     list.appendChild(li);
-  } else {
-    for (const item of breakdown) {
-      const li = document.createElement("li");
-      li.className = `cl-item ${item.delta < 0 ? "cl-neg" : "cl-pos"}`;
-      li.innerHTML = `<span class="cl-delta">${item.delta > 0 ? "+" : ""}${item.delta}</span><span class="cl-body"><strong>${item.label}</strong><em>${item.detail}</em></span>`;
-      list.appendChild(li);
-    }
   }
 
   const footer = document.createElement("p");
   footer.className = "cl-footer";
-  footer.textContent = "Chat Lens — AI responses can be confidently wrong";
+  footer.textContent = "Chat Lens \u2014 AI can sound certain and still be wrong";
 
   panel.appendChild(title);
   panel.appendChild(list);
@@ -182,7 +213,7 @@ function createBadge(casResult) {
   badge.addEventListener("click", () => {
     const open = badge.getAttribute("aria-expanded") === "true";
     badge.setAttribute("aria-expanded", String(!open));
-    badge.querySelector(".cl-chevron").textContent = open ? "▾" : "▴";
+    badge.querySelector(".cl-chevron").textContent = open ? "\u25be" : "\u25b4";
     panel.hidden = open;
   });
 
@@ -194,7 +225,7 @@ function createBadge(casResult) {
 function injectBadge(turnEl, text, sensitivity) {
   if (turnEl.hasAttribute(BADGE_ATTR)) return;
   turnEl.setAttribute(BADGE_ATTR, "true");
-  turnEl.after(createBadge(computeCAS(text, sensitivity)));
+  turnEl.after(createBadge(computeERF(text, sensitivity)));
 }
 
 function removeAllBadges() {
@@ -202,12 +233,12 @@ function removeAllBadges() {
   document.querySelectorAll(`[${BADGE_ATTR}]`).forEach(el => el.removeAttribute(BADGE_ATTR));
 }
 
-const TURN_SEL = '[data-message-author-role="assistant"]';
+const TURN_SEL  = '[data-message-author-role="assistant"]';
 const PROSE_SEL = ".markdown, .prose, [class*='markdown'], [class*='prose']";
 
-let enabled = true;
+let enabled     = true;
 let sensitivity = "medium";
-let observer = null;
+let observer    = null;
 
 function extractText(el) { return (el.querySelector(PROSE_SEL) || el).innerText || ""; }
 
@@ -251,7 +282,7 @@ function startObserver() {
 }
 
 chrome.storage.sync.get({ chatLens_enabled: true, chatLens_sensitivity: "medium" }, (items) => {
-  enabled = items.chatLens_enabled;
+  enabled     = items.chatLens_enabled;
   sensitivity = items.chatLens_sensitivity;
   scanAll();
   startObserver();
