@@ -4,6 +4,10 @@ const CONFIDENCE_PHRASES = [
   "brilliant", "fantastic", "spot on", "exactly right", "totally agree",
   "perfect approach", "great point", "well said", "you're right",
   "that's a great", "love this idea", "this is genius",
+  "great question", "that's a great question", "you're absolutely right",
+  "you've nailed it", "that's so insightful", "you're very perceptive",
+  "i love that", "i completely agree", "you've clearly thought about this",
+  "this is exciting", "that's innovative",
 ];
 
 const COMMITMENT_PHRASES = [
@@ -11,6 +15,11 @@ const COMMITMENT_PHRASES = [
   "you need to", "i recommend", "the best approach", "this will work",
   "this is the way", "go ahead and", "definitely do", "without a doubt",
   "i strongly suggest", "this is definitely", "you must", "the right move",
+  "this is a no-brainer", "you can't go wrong", "there's no reason not to",
+  "just go for it", "move forward with", "this will definitely work",
+  "you've got what it takes", "don't hesitate to",
+  "now is the time", "don't wait", "you don't want to miss this",
+  "this is a rare opportunity",
 ];
 
 const CRITIQUE_MARKERS = [
@@ -19,6 +28,10 @@ const CRITIQUE_MARKERS = [
   "consideration", "not necessarily", "it depends", "alternatively",
   "downside", "trade-off", "tradeoff", "worth noting", "keep in mind",
   "one issue", "potential problem", "may not", "might not",
+  "be aware", "worth considering", "consult a professional", "verify this",
+  "there's no guarantee", "results may vary", "this isn't guaranteed",
+  "you may want to check", "i could be wrong", "seek advice",
+  "do your own research", "speak to a", "talk to a",
 ];
 
 const SENSITIVITY_WEIGHTS = {
