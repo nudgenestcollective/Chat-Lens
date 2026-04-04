@@ -61,27 +61,27 @@ function computeCAS(text, sensitivity) {
   const confMatched = matchPhrases(text, CONFIDENCE_PHRASES);
   if (confMatched.length) {
     raw += weights.confidence;
-    breakdown.push({ label: "Confidence phrases detected", delta: +weights.confidence,
+    breakdown.push({ label: "Uses overly confident language", delta: +weights.confidence,
       detail: confMatched.slice(0,3).map(p=>`"${p}"`).join(", ") });
   }
 
   const commMatched = matchPhrases(text, COMMITMENT_PHRASES);
   if (commMatched.length) {
     raw += weights.commitment;
-    breakdown.push({ label: "Commitment / directive phrases detected", delta: +weights.commitment,
+    breakdown.push({ label: "Tells you what you should do", delta: +weights.commitment,
       detail: commMatched.slice(0,3).map(p=>`"${p}"`).join(", ") });
   }
 
   if (!matchPhrases(text, CRITIQUE_MARKERS).length) {
     raw -= weights.noCritique;
-    breakdown.push({ label: "No critique or nuance markers found", delta: -weights.noCritique,
+    breakdown.push({ label: "Offers no warnings or limitations", delta: -weights.noCritique,
       detail: 'Missing: "however", "limitation", "on the other hand"...' });
   }
 
   const repeated = findRepeatedKeywords(text);
   if (repeated.length) {
     raw += weights.repetition;
-    breakdown.push({ label: "Repeated keyword reinforcement", delta: +weights.repetition,
+    breakdown.push({ label: "Repeats ideas to seem more convincing", delta: +weights.repetition,
       detail: repeated.slice(0,5).map(w=>`"${w}"`).join(", ") });
   }
 
@@ -97,9 +97,9 @@ function badgeColor(score) {
 }
 
 function scoreLabel(score) {
-  if (score >= 7) return "Seek a second opinion";
-  if (score >= 4) return "Review recommended";
-  return "Low risk";
+  if (score >= 7) return "Get a human opinion";
+  if (score >= 4) return "Worth a second look";
+  return "Looks balanced";
 }
 
 function createBadge(casResult) {
@@ -111,7 +111,7 @@ function createBadge(casResult) {
   badge.className = "cl-badge";
   badge.setAttribute("aria-expanded", "false");
   badge.style.setProperty("--cl-color", badgeColor(score));
-  badge.innerHTML = `<span class="cl-icon">⚠️</span><span class="cl-score">CAS ${score}/10</span><span class="cl-level">${scoreLabel(score)}</span><span class="cl-chevron">▾</span>`;
+  badge.innerHTML = `<span class="cl-icon">⚠️</span><span class="cl-score">AI Check: ${score}/10</span><span class="cl-level">${scoreLabel(score)}</span><span class="cl-chevron">▾</span>`;
 
   const panel = document.createElement("div");
   panel.className = "cl-panel";
