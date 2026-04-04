@@ -34,6 +34,15 @@ const CRITIQUE_MARKERS = [
   "do your own research", "speak to a", "talk to a",
 ];
 
+const EVIDENCE_MARKERS = [
+  "according to", "research shows", "studies suggest", "study shows",
+  "data indicates", "evidence suggests", "for example", "for instance",
+  "source:", "cited", "published", "peer-reviewed", "peer reviewed",
+  "statistics show", "survey found", "reported by", "findings show",
+  "researchers found", "clinical trial", "meta-analysis", "journal",
+  "experts say", "scientists found", "based on data", "the evidence",
+];
+
 const SENSITIVITY_WEIGHTS = {
   low:    { confidence: 1,   commitment: 1.5, noCritique: 1,   repetition: 1.5 },
   medium: { confidence: 2,   commitment: 3,   noCritique: 2,   repetition: 3   },
@@ -96,6 +105,18 @@ function computeCAS(text, sensitivity) {
     raw += weights.repetition;
     breakdown.push({ label: "Repeats ideas to seem more convincing", delta: +weights.repetition,
       detail: repeated.slice(0,5).map(w=>`"${w}"`).join(", ") });
+  }
+
+  // High confidence + no evidence = special warning
+  const hasEvidence = EVIDENCE_MARKERS.some(m => text.toLowerCase().includes(m));
+  const highConfidence = (confMatched.length > 0 || commMatched.length > 0);
+  if (highConfidence && !hasEvidence) {
+    raw += weights.commitment;
+    breakdown.push({
+      label: "High confidence, no evidence cited",
+      delta: +weights.commitment,
+      detail: "This response makes strong claims without citing sources, data, or examples — verify before acting.",
+    });
   }
 
   return { score: Math.min(10, Math.max(0, Math.round(raw))), breakdown };
