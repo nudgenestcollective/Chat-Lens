@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat Lens</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <span class="logo">⚠️ Chat Lens</span>
+    <label class="toggle" aria-label="Enable Chat Lens">
+      <input type="checkbox" id="enabledToggle" checked>
+      <span class="track"><span class="thumb"></span></span>
+    </label>
+  </header>
+  <section id="controls">
+    <p class="section-label">Sensitivity</p>
+    <div class="slider-row">
+      <button class="sens-btn" data-value="low">Low</button>
+      <button class="sens-btn active" data-value="medium">Medium</button>
+      <button class="sens-btn" data-value="high">High</button>
+    </div>
+    <p class="sens-desc" id="sensDesc">Balanced detection — standard scoring weights.</p>
+  </section>
+  <footer>Scores refresh automatically as new responses arrive.</footer>
+  <script src="popup.js"></script>
+</body>
+</html>

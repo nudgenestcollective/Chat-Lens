@@ -1,0 +1,94 @@
+.cl-wrapper {
+  display: block;
+  margin: 6px 0 10px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 12px;
+}
+
+.cl-badge {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--cl-color, #fb8c00);
+  background: color-mix(in srgb, var(--cl-color, #fb8c00) 10%, transparent);
+  color: var(--cl-color, #fb8c00);
+  line-height: 1.4;
+  transition: background 0.15s;
+}
+
+.cl-badge:hover {
+  background: color-mix(in srgb, var(--cl-color, #fb8c00) 18%, transparent);
+}
+
+.cl-icon    { font-size: 13px; }
+.cl-score   { font-weight: 700; font-size: 12px; }
+.cl-level   { font-size: 11px; opacity: 0.85; }
+.cl-chevron { font-size: 10px; margin-left: 2px; }
+
+.cl-panel {
+  margin-top: 6px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background: #fafafa;
+  color: #333;
+  max-width: 520px;
+}
+
+.cl-panel-title {
+  margin: 0 0 10px;
+  font-weight: 700;
+  font-size: 13px;
+  color: #222;
+}
+
+.cl-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cl-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.cl-delta {
+  flex-shrink: 0;
+  min-width: 28px;
+  font-weight: 700;
+  font-size: 13px;
+  padding-top: 1px;
+}
+
+.cl-pos .cl-delta { color: #e53935; }
+.cl-neg .cl-delta { color: #43a047; }
+
+.cl-body { display: flex; flex-direction: column; gap: 1px; }
+.cl-body strong { font-weight: 600; color: #222; }
+.cl-body em { font-style: normal; color: #666; font-size: 11px; }
+
+.cl-footer {
+  margin: 10px 0 0;
+  font-size: 10px;
+  color: #aaa;
+  text-align: right;
+}
+
+@media (prefers-color-scheme: dark) {
+  .cl-panel { background: #1e1e1e; border-color: #333; color: #ddd; }
+  .cl-panel-title { color: #eee; }
+  .cl-body strong { color: #eee; }
+  .cl-body em { color: #999; }
+  .cl-footer { color: #555; }
+}
