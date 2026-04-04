@@ -97,9 +97,9 @@ function badgeColor(score) {
 }
 
 function scoreLabel(score) {
-  if (score >= 7) return "High";
-  if (score >= 4) return "Moderate";
-  return "Low";
+  if (score >= 7) return "Seek a second opinion";
+  if (score >= 4) return "Review recommended";
+  return "Low risk";
 }
 
 function createBadge(casResult) {
@@ -111,7 +111,7 @@ function createBadge(casResult) {
   badge.className = "cl-badge";
   badge.setAttribute("aria-expanded", "false");
   badge.style.setProperty("--cl-color", badgeColor(score));
-  badge.innerHTML = `<span class="cl-icon">⚠️</span><span class="cl-score">CAS ${score}/10</span><span class="cl-level">${scoreLabel(score)} confidence amplification</span><span class="cl-chevron">▾</span>`;
+  badge.innerHTML = `<span class="cl-icon">⚠️</span><span class="cl-score">CAS ${score}/10</span><span class="cl-level">${scoreLabel(score)}</span><span class="cl-chevron">▾</span>`;
 
   const panel = document.createElement("div");
   panel.className = "cl-panel";
@@ -119,7 +119,7 @@ function createBadge(casResult) {
 
   const title = document.createElement("p");
   title.className = "cl-panel-title";
-  title.textContent = `Confidence Amplification Score: ${score}/10`;
+  title.textContent = `This response may need a human second opinion`;
 
   const list = document.createElement("ul");
   list.className = "cl-list";
@@ -139,7 +139,7 @@ function createBadge(casResult) {
 
   const footer = document.createElement("p");
   footer.className = "cl-footer";
-  footer.textContent = "Chat Lens — confidence amplification detector";
+  footer.textContent = "Chat Lens — AI responses can be confidently wrong";
 
   panel.appendChild(title);
   panel.appendChild(list);
