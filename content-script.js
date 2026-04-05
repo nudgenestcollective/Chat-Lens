@@ -64,6 +64,10 @@ const DR_STRONG = [
   "you should", "you must", "strongly consider", "act now",
   "invest now", "this is the time", "don't miss", "take action",
 ];
+const LOW_PRESSURE_PATTERNS = [
+  "consider", "might", "could", "it may help", "one option is",
+  "in general", "depending on", "often helpful",
+];
 const SENSITIVITY_MULTIPLIERS = { low: 0.7, medium: 1.0, high: 1.3 };
 
 function matchAny(text, phrases) {
@@ -71,8 +75,10 @@ function matchAny(text, phrases) {
   return phrases.filter(p => lower.includes(p));
 }
 
-function scoreDR(text) {
-  return matchAny(text, DR_STRONG).length > 0 ? 1 : 0;
+function shouldApplyDR(text) {
+  const hasStrongDirective = matchAny(text, DR_STRONG).length > 0;
+  const isLowPressure      = matchAny(text, LOW_PRESSURE_PATTERNS).length > 0;
+  return hasStrongDirective && !isLowPressure;
 }
 
 function scoreAS(text) {
@@ -170,7 +176,7 @@ function computeVERA(text, sensitivity) {
   const weighted   = (as.score * 0.25) + (es.score * 0.45) + (sc.score * 0.30);
   const multiplier = SENSITIVITY_MULTIPLIERS[sensitivity] || 1.0;
   let score = Math.min(10, Math.max(0, Math.round((weighted / 3) * 10 * multiplier)));
-  if (scoreDR(text) === 1 && es.score >= 2) {
+  if (shouldApplyDR(text) && es.score >= 2) {
     score = Math.min(10, score + 2);
   }
   if (VERA_DEBUG) {
