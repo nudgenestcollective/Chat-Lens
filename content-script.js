@@ -1,155 +1,223 @@
 /**
- * Chat Lens — Epistemic Risk Framework (ERF)
- * 5-dimension scoring engine. Runs on chatgpt.com / chat.openai.com.
+ * Chat Lens — VERA (Validated Epistemic Risk Assessment)
+ * 3-dimension weighted scoring engine.
+ * Runs on chatgpt.com / chat.openai.com.
  */
 
-const ABSOLUTE_PHRASES = [
-  "the best way", "the only way", "will always", "always works", "definitely will",
+const VERA_DEBUG = true; // set false in production
+
+// ─── Dimension 1: Assertion Strength (AS) ────────────────────────────────────
+
+const AS_ABSOLUTE = [
+  "the best way", "the only way", "will always", "always works",
   "guaranteed to", "without question", "without a doubt", "the most effective",
   "most effective way", "the right way", "the correct way", "naturally builds",
   "naturally leads", "naturally creates", "cannot fail", "the best approach",
   "the best strategy", "the best method", "clearly the", "obviously the",
   "certainly will", "the proven way", "always the case", "100%",
+  "there is no doubt", "undoubtedly", "unquestionably",
 ];
 
-const HEDGED_PHRASES = [
-  "may", "might", "could", "sometimes", "it depends", "varies", "in some cases",
-  "can be", "tends to", "not always", "for some people", "in certain situations",
-  "one possibility", "worth exploring", "potentially", "perhaps", "arguably",
+const AS_HEDGED = [
+  "may", "might", "could", "sometimes", "it depends", "varies",
+  "in some cases", "can be", "tends to", "not always", "for some people",
+  "in certain situations", "one possibility", "potentially", "perhaps",
+  "arguably", "often", "generally", "usually", "typically", "in many cases",
+  "worth exploring",
 ];
 
-const ANCHORING_PHRASES = [
-  "if you", "for people who", "in your situation", "depending on",
-  "in industries where", "for those who", "given that", "assuming",
-  "in your case", "for your specific", "varies by", "in some workplaces",
-  "not all", "in certain situations", "context-dependent", "your specific",
-  "your particular", "based on your",
-];
+// ─── Dimension 2: Evidence Signal (ES) ───────────────────────────────────────
 
-const VAGUE_ANCHORING_PHRASES = [
-  "for most people", "in many cases", "generally speaking", "for most",
-  "in most situations", "for many", "in typical cases", "usually works",
-];
-
-const STRONG_EVIDENCE_PHRASES = [
+const ES_STRONG = [
   "according to", "research shows", "studies suggest", "study shows",
   "data indicates", "evidence suggests", "for example", "for instance",
   "published", "peer-reviewed", "statistics show", "survey found",
   "reported by", "findings show", "researchers found", "meta-analysis",
   "experts say", "scientists found", "based on data", "clinical trial",
-  "a study", "the research", "documented", "proven in", "cited",
+  "a study", "the research", "documented", "cited",
 ];
 
-const WEAK_EVIDENCE_PHRASES = [
+const ES_WEAK = [
   "many people find", "some people", "often reported", "commonly seen",
   "anecdotally", "in practice", "in my experience", "some experts",
-  "many experts", "widely believed", "often said",
+  "many experts", "widely believed", "often said", "many find",
 ];
 
-const LIMITING_PHRASES = [
-  "this varies", "it depends", "not always", "may not apply",
-  "consult a professional", "seek advice", "talk to a", "speak to a",
-  "in your specific context", "results may vary", "this isn't guaranteed",
-  "there's no guarantee", "individual results", "not a substitute",
-  "consider your situation", "won't work for everyone", "not universal",
-  "exceptions exist", "this may not", "your mileage may vary",
+const ES_UNCERTAINTY = [
+  "i could be wrong", "worth verifying", "consult a professional",
+  "seek advice", "talk to a", "speak to a", "i'm not certain",
+  "i'm not sure", "you may want to verify", "double-check",
+  "this isn't guaranteed", "results may vary", "not a substitute",
+  "your situation may differ", "i cannot guarantee",
 ];
 
-const UNIVERSAL_PHRASES = [
+// ─── Dimension 3: Scope Coverage (SC) ────────────────────────────────────────
+
+const SC_SCOPE = [
+  "if you're", "if you are", "depending on", "in your situation",
+  "in your case", "for your specific", "given your", "based on your",
+  "in some industries", "in some workplaces", "for those who",
+  "assuming you", "context-dependent", "varies by",
+];
+
+const SC_LIMIT = [
+  "not always", "may not apply", "there are exceptions",
+  "this may not", "won't work for everyone", "not universal",
+  "exceptions exist", "your mileage may vary", "not for everyone",
+  "this varies", "individual results",
+];
+
+const SC_UNIVERSAL = [
   "everyone should", "anyone can", "always works", "in any situation",
   "regardless of", "universally", "no matter what", "works for everyone",
   "applies to all", "in every case", "without exception",
 ];
 
-const SCRIPT_PHRASES = [
-  "say something like", "you might say", "tell them", "you could say",
-  "say to your", "here's what to say", "the exact words", "phrase it as",
-  "words like", "something like", "try saying",
-];
-
-const DIRECTIVE_PHRASES = [
-  "you should", "you must", "you need to", "make sure to",
-  "the first step is", "start by", "begin by", "always do",
-  "never do", "the key is to", "the trick is to", "do this",
-  "follow these steps", "step 1", "step one",
-];
+// ─── Sensitivity (optional — medium is ×1.0, effectively off) ────────────────
 
 const SENSITIVITY_MULTIPLIERS = { low: 0.7, medium: 1.0, high: 1.3 };
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 function matchAny(text, phrases) {
   const lower = text.toLowerCase();
-  return phrases.filter(p => lower.includes(p.toLowerCase()));
+  return phrases.filter(p => lower.includes(p));
 }
 
-function computeERF(text, sensitivity) {
-  const breakdown = [];
-  let total = 0;
+// ─── Dimension Scorers ────────────────────────────────────────────────────────
 
-  const absolute = matchAny(text, ABSOLUTE_PHRASES);
-  const hedged   = matchAny(text, HEDGED_PHRASES);
-  const cl = (absolute.length > 0 && hedged.length === 0) ? 2
-           : (hedged.length > 0 && absolute.length === 0) ? 0 : 1;
-  total += cl;
-  breakdown.push({
-    dimension: "Certainty Language", score: cl, max: 2,
-    label: ["Well hedged","Moderately certain","Absolute claims"][cl],
-    detail: cl === 2 ? `Absolute phrases: ${absolute.slice(0,3).map(p=>`"${p}"`).join(", ")}`
-          : cl === 0 ? `Hedged with: ${hedged.slice(0,3).map(p=>`"${p}"`).join(", ")}`
-          : "Mix of certain and hedged language",
-  });
+function scoreAS(text) {
+  const absolute = matchAny(text, AS_ABSOLUTE);
+  const hedged   = matchAny(text, AS_HEDGED);
 
-  const anchored      = matchAny(text, ANCHORING_PHRASES);
-  const vagueAnchored = matchAny(text, VAGUE_ANCHORING_PHRASES);
-  const ca = anchored.length > 0 ? 0 : vagueAnchored.length > 0 ? 1 : 2;
-  total += ca;
-  breakdown.push({
-    dimension: "Context Anchoring", score: ca, max: 2,
-    label: ["Well scoped","Vaguely scoped","No context given"][ca],
-    detail: ca === 0 ? `Scoped with: ${anchored.slice(0,2).map(p=>`"${p}"`).join(", ")}`
-          : ca === 1 ? `Vague scope only: ${vagueAnchored.slice(0,2).map(p=>`"${p}"`).join(", ")}`
-          : "No mention of who this applies to, when, or under what conditions",
-  });
+  let score;
+  if      (absolute.length === 0 && hedged.length === 0) score = 1; // unknown → not safe by default
+  else if (absolute.length === 0 && hedged.length  > 0) score = 0;
+  else if (absolute.length  > 0 && hedged.length   > 0) score = 1;
+  else if (absolute.length  > 0 && hedged.length  === 0) score = 2;
+  if      (absolute.length >= 3 && hedged.length  === 0) score = 3;
 
-  const strongEvid = matchAny(text, STRONG_EVIDENCE_PHRASES);
-  const weakEvid   = matchAny(text, WEAK_EVIDENCE_PHRASES);
-  const eg = strongEvid.length > 0 ? 0 : weakEvid.length > 0 ? 1 : 2;
-  total += eg;
-  breakdown.push({
-    dimension: "Evidence Grounding", score: eg, max: 2,
-    label: ["Evidence cited","Weak evidence only","No evidence cited"][eg],
-    detail: eg === 0 ? `Supported by: ${strongEvid.slice(0,2).map(p=>`"${p}"`).join(", ")}`
-          : eg === 1 ? `Weak signals: ${weakEvid.slice(0,2).map(p=>`"${p}"`).join(", ")}`
-          : "No data, sources, or examples — claims asserted as fact",
-  });
+  if (VERA_DEBUG) {
+    console.groupCollapsed(`[VERA] Assertion Strength → ${score}/3`);
+    console.log("Absolute phrases:", absolute);
+    console.log("Hedged phrases:  ", hedged);
+    console.groupEnd();
+  }
 
-  const limiting  = matchAny(text, LIMITING_PHRASES);
-  const universal = matchAny(text, UNIVERSAL_PHRASES);
-  const ur = limiting.length > 0 ? 0 : universal.length > 0 ? 2 : 1;
-  total += ur;
-  breakdown.push({
-    dimension: "Universality Risk", score: ur, max: 2,
-    label: ["Scope limited","Implied universal","Explicitly universal"][ur],
-    detail: ur === 0 ? `Limits scope with: ${limiting.slice(0,2).map(p=>`"${p}"`).join(", ")}`
-          : ur === 2 ? `Universal framing: ${universal.slice(0,2).map(p=>`"${p}"`).join(", ")}`
-          : "No limiting conditions — implies advice applies to everyone in all situations",
-  });
+  return { score, matched: { absolute, hedged } };
+}
 
-  const scripts    = matchAny(text, SCRIPT_PHRASES);
-  const directives = matchAny(text, DIRECTIVE_PHRASES);
-  const as_ = scripts.length > 0 ? 2 : directives.length > 0 ? 1 : 0;
-  total += as_;
-  breakdown.push({
-    dimension: "Action Specificity Risk", score: as_, max: 2,
-    label: ["Abstract principles","Specific directives","Word-for-word scripts"][as_],
-    detail: as_ === 2 ? `Scripts: ${scripts.slice(0,2).map(p=>`"${p}"`).join(", ")}`
-          : as_ === 1 ? `Directives: ${directives.slice(0,2).map(p=>`"${p}"`).join(", ")}`
-          : "Stays at the level of principles — requires reader judgment",
-  });
+function scoreES(text) {
+  const strong      = matchAny(text, ES_STRONG);
+  const weak        = matchAny(text, ES_WEAK);
+  const uncertainty = matchAny(text, ES_UNCERTAINTY);
 
+  // Waterfall — first match wins, no double-counting
+  let score;
+  if      (strong.length      > 0) score = 0;
+  else if (weak.length        > 0) score = 1;
+  else if (uncertainty.length > 0) score = 2;
+  else                              score = 3;
+
+  if (VERA_DEBUG) {
+    console.groupCollapsed(`[VERA] Evidence Signal → ${score}/3`);
+    console.log("Strong evidence:  ", strong);
+    console.log("Weak evidence:    ", weak);
+    console.log("Uncertainty signals:", uncertainty);
+    console.groupEnd();
+  }
+
+  return { score, matched: { strong, weak, uncertainty } };
+}
+
+function scoreSC(text) {
+  const scope     = matchAny(text, SC_SCOPE);
+  const limit     = matchAny(text, SC_LIMIT);
+  const universal = matchAny(text, SC_UNIVERSAL);
+
+  let score;
+  if      (universal.length > 0)                                   score = 3;
+  else if (scope.length >= 2 || (scope.length >= 1 && limit.length >= 1)) score = 0;
+  else if (scope.length === 1 || limit.length === 1)               score = 1;
+  else                                                              score = 2;
+
+  if (VERA_DEBUG) {
+    console.groupCollapsed(`[VERA] Scope Coverage → ${score}/3`);
+    console.log("Scope markers:    ", scope);
+    console.log("Limit markers:    ", limit);
+    console.log("Universal markers:", universal);
+    console.groupEnd();
+  }
+
+  return { score, matched: { scope, limit, universal } };
+}
+
+// ─── VERA Engine ──────────────────────────────────────────────────────────────
+
+function computeVERA(text, sensitivity) {
+  const as = scoreAS(text);
+  const es = scoreES(text);
+  const sc = scoreSC(text);
+
+  // W = (AS × 0.25) + (ES × 0.45) + (SC × 0.30) — max 3.0
+  const weighted   = (as.score * 0.25) + (es.score * 0.45) + (sc.score * 0.30);
   const multiplier = SENSITIVITY_MULTIPLIERS[sensitivity] || 1.0;
-  const score = Math.min(10, Math.max(0, Math.round(total * multiplier)));
+  const score      = Math.min(10, Math.max(0, Math.round((weighted / 3) * 10 * multiplier)));
+
+  if (VERA_DEBUG) {
+    console.groupCollapsed(`[VERA] Final Score → ${score}/10`);
+    console.log(`Weighted raw: ${weighted.toFixed(3)} / 3.0`);
+    console.log(`Sensitivity:  ${sensitivity} (×${multiplier})`);
+    console.log(`Final score:  ${score}/10`);
+    console.groupEnd();
+  }
+
+  const LABELS_AS = ["Well hedged", "Mixed certainty", "Mostly absolute", "Entirely absolute"];
+  const LABELS_ES = ["Evidence cited", "Weak evidence", "Ungrounded but honest", "Pure assertion"];
+  const LABELS_SC = ["Explicitly bounded", "Partially bounded", "Implicitly universal", "Actively universal"];
+
+  const breakdown = [
+    {
+      dimension: "Assertion Strength", score: as.score, max: 3,
+      label: LABELS_AS[as.score],
+      detail: as.score === 3
+        ? `No hedging. Absolute: ${as.matched.absolute.slice(0,3).map(p=>`"${p}"`).join(", ")}`
+        : as.score === 2
+        ? `Absolute dominates: ${as.matched.absolute.slice(0,2).map(p=>`"${p}"`).join(", ")}`
+        : as.score === 1 && as.matched.absolute.length
+        ? `Mixed: "${as.matched.absolute[0]}" alongside "${as.matched.hedged[0]}"`
+        : as.score === 1
+        ? "Neutral — neither clearly hedged nor absolute"
+        : `Hedged: ${as.matched.hedged.slice(0,3).map(p=>`"${p}"`).join(", ")}`,
+    },
+    {
+      dimension: "Evidence Signal", score: es.score, max: 3,
+      label: LABELS_ES[es.score],
+      detail: es.score === 0
+        ? `Grounded: ${es.matched.strong.slice(0,2).map(p=>`"${p}"`).join(", ")}`
+        : es.score === 1
+        ? `Weak reference only: ${es.matched.weak.slice(0,2).map(p=>`"${p}"`).join(", ")}`
+        : es.score === 2
+        ? `No evidence but acknowledges limits: ${es.matched.uncertainty.slice(0,2).map(p=>`"${p}"`).join(", ")}`
+        : "No data, sources, examples, or uncertainty signals — claims stated as fact",
+    },
+    {
+      dimension: "Scope Coverage", score: sc.score, max: 3,
+      label: LABELS_SC[sc.score],
+      detail: sc.score === 0
+        ? `Scoped: ${[...sc.matched.scope, ...sc.matched.limit].slice(0,2).map(p=>`"${p}"`).join(", ")}`
+        : sc.score === 1
+        ? `Partial: "${[...sc.matched.scope, ...sc.matched.limit][0]}"`
+        : sc.score === 2
+        ? "No scope conditions — implies advice applies to everyone in all situations"
+        : `Actively universal: ${sc.matched.universal.slice(0,2).map(p=>`"${p}"`).join(", ")}`,
+    },
+  ];
+
   return { score, breakdown };
 }
+
+// ─── UI Component (unchanged) ─────────────────────────────────────────────────
 
 const BADGE_ATTR = "data-chat-lens-scored";
 
@@ -165,10 +233,10 @@ function scoreLabel(score) {
   return "Looks balanced";
 }
 
-function dimColor(s) { return s === 0 ? "#43a047" : s === 1 ? "#fb8c00" : "#e53935"; }
+function dimColor(s) { return s === 0 ? "#43a047" : s <= 1 ? "#fb8c00" : "#e53935"; }
 
-function createBadge(erfResult) {
-  const { score, breakdown } = erfResult;
+function createBadge(veraResult) {
+  const { score, breakdown } = veraResult;
   const wrapper = document.createElement("div");
   wrapper.className = "cl-wrapper";
 
@@ -225,13 +293,15 @@ function createBadge(erfResult) {
 function injectBadge(turnEl, text, sensitivity) {
   if (turnEl.hasAttribute(BADGE_ATTR)) return;
   turnEl.setAttribute(BADGE_ATTR, "true");
-  turnEl.after(createBadge(computeERF(text, sensitivity)));
+  turnEl.after(createBadge(computeVERA(text, sensitivity)));
 }
 
 function removeAllBadges() {
   document.querySelectorAll(".cl-wrapper").forEach(el => el.remove());
   document.querySelectorAll(`[${BADGE_ATTR}]`).forEach(el => el.removeAttribute(BADGE_ATTR));
 }
+
+// ─── Observer & Init (unchanged) ──────────────────────────────────────────────
 
 const TURN_SEL  = '[data-message-author-role="assistant"]';
 const PROSE_SEL = ".markdown, .prose, [class*='markdown'], [class*='prose']";
