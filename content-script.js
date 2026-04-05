@@ -73,6 +73,30 @@ const HIGH_STAKES_SIGNALS = [
   "business decision", "hire", "fire",
 ];
 
+const URGENCY_PHRASES = [
+  "right now", "act fast", "don't miss", "act immediately",
+  "time is running out", "before it's too late", "do this today",
+  "don't delay", "act today", "limited time", "now or never",
+];
+
+const SCARCITY_PHRASES = [
+  "rare opportunity", "doesn't come often", "once in a lifetime",
+  "limited opportunity", "not many people know",
+  "while you still can", "window is closing",
+];
+
+const UPSIDE_FRAMING = [
+  "rapid growth", "maximize returns", "massive upside", "huge potential",
+  "explosive growth", "life-changing", "transform your",
+  "outperform", "beat the market",
+];
+
+const DIRECTIONAL_ADVICE = [
+  "invest heavily", "buy now", "sell now", "put your money",
+  "move your money", "go all in", "double down", "load up on",
+  "get in now", "buy the dip", "take a position",
+];
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function matchAny(text, phrases) {
@@ -151,6 +175,15 @@ function classifyContext(text) {
   return "DECISION";
 }
 
+function scorePUE(text) {
+  const urgency  = matchAny(text, URGENCY_PHRASES);
+  const scarcity = matchAny(text, SCARCITY_PHRASES);
+  const upside   = matchAny(text, UPSIDE_FRAMING);
+  const directed = matchAny(text, DIRECTIONAL_ADVICE);
+  const matched  = [...urgency, ...scarcity, ...upside, ...directed];
+  return { triggered: matched.length > 0, matched };
+}
+
 // ─── VERA Engine ─────────────────────────────────────────────────────────────
 
 const SENSITIVITY_MULTIPLIERS = { low: 0.75, medium: 1.0, high: 1.25 };
@@ -173,7 +206,7 @@ function computeVERA(text, sensitivity = "medium") {
   const context = classifyContext(text);
   if (context === "LOW_STAKES") score = Math.min(score, 3);
 
-  const riskLevel = score >= 7 ? "HIGH" : score >= 4 ? "MEDIUM" : "LOW";
+  let riskLevel = score >= 7 ? "HIGH" : score >= 4 ? "MEDIUM" : "LOW";
   const breakdown = [];
 
   if (as.score >= 2) {
@@ -214,7 +247,23 @@ function computeVERA(text, sensitivity = "medium") {
     breakdown.push({ label: "Pressure to act quickly", detail: "Uses urgency language that discourages pausing to verify", positive: false });
   }
 
-  console.debug("[ChatLens VERA]", { score, riskLevel, as, es, sc, context, multiplier });
+  // Persuasion & Urgency Escalation — override to RED in high-stakes domains
+  const pue = scorePUE(text);
+  const strongEvidence = es.score === 0 && as.score === 0;
+  if (pue.triggered && context === "HIGH_STAKES" && !strongEvidence) {
+    score = Math.max(score, 7);
+    riskLevel = "HIGH";
+  }
+
+  if (pue.triggered) {
+    breakdown.push({
+      label: "Uses persuasion or urgency",
+      detail: pue.matched.length ? "Phrases like: \u201c" + pue.matched.slice(0, 2).join("\u201d, \u201c") + "\u201d" : "",
+      positive: false,
+    });
+  }
+
+  console.debug("[ChatLens VERA]", { score, riskLevel, as, es, sc, context, pue, multiplier });
   return { score, riskLevel, breakdown };
 }
 
