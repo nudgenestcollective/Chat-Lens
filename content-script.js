@@ -225,9 +225,9 @@ function computeVERA(text, sensitivity) {
     esDetail = "No evidence but signals uncertainty: " + es.sub.us.matched.explicit.slice(0,2).map(function(p){return '"'+p+'"';}).join(", ");
   else
     esDetail = "No data, sources, examples, or uncertainty signals -- claims stated as fact";
-  const LABELS_AS = ["Well hedged","Mixed certainty","Mostly absolute","Entirely absolute"];
-  const LABELS_ES = ["Evidence cited","Weak evidence","Ungrounded but honest","Pure assertion"];
-  const LABELS_SC = ["Explicitly bounded","Partially bounded","Implicitly universal","Actively universal"];
+  const LABELS_AS = ["Uses careful, cautious language","Mix of confident and cautious","Sounds very sure of itself","States things as absolute fact"];
+  const LABELS_ES = ["Backed by sources or examples","Weak evidence","No proof, but admits it","No evidence but stated as fact"];
+  const LABELS_SC = ["Explains who this advice is for","Partly clear about who this applies to","Assumes this works for everyone","Claims this works for everyone"];
   const asDetail = as.score === 3
     ? "No hedging. Absolute: " + as.matched.absolute.slice(0,3).map(function(p){return '"'+p+'"';}).join(", ")
     : as.score === 2
@@ -244,9 +244,9 @@ function computeVERA(text, sensitivity) {
     ? "No scope conditions -- implies advice applies to everyone in all situations"
     : "Actively universal: " + sc.matched.universal.slice(0,2).map(function(p){return '"'+p+'"';}).join(", ");
   const breakdown = [
-    { dimension: "Assertion Strength", score: as.score, max: 3, label: LABELS_AS[as.score], detail: asDetail },
-    { dimension: "Evidence Signal",    score: es.score, max: 3, label: LABELS_ES[es.score], detail: esDetail },
-    { dimension: "Scope Coverage",     score: sc.score, max: 3, label: LABELS_SC[sc.score], detail: scDetail },
+    { dimension: "How confident does it sound?", score: as.score, max: 3, label: LABELS_AS[as.score], detail: asDetail },
+    { dimension: "What is this based on?",    score: es.score, max: 3, label: LABELS_ES[es.score], detail: esDetail },
+    { dimension: "Does this apply to your situation?",     score: sc.score, max: 3, label: LABELS_SC[sc.score], detail: scDetail },
   ];
   return { score, breakdown };
 }
@@ -259,9 +259,9 @@ function badgeColor(score) {
   return "#43a047";
 }
 function scoreLabel(score) {
-  if (score >= 7) return "Get a human opinion";
-  if (score >= 4) return "Worth a second look";
-  return "Looks balanced";
+  if (score >= 7) return "Don't act on this alone";
+  if (score >= 4) return "Verify before acting";
+  return "Looks OK to use";
 }
 function dimColor(s, max) {
   const ratio = s / max;
@@ -286,7 +286,7 @@ function createBadge(veraResult) {
   panel.hidden = true;
   const title = document.createElement("p");
   title.className = "cl-panel-title";
-  title.textContent = "Epistemic Risk Score: " + score + "/10";
+  title.textContent = "How much should you trust this? (" + score + "/10)";
   const list = document.createElement("ul");
   list.className = "cl-list";
   for (const dim of breakdown) {
