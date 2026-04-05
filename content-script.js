@@ -70,7 +70,18 @@ const HIGH_STAKES_SIGNALS = [
   "invest", "investment", "stock", "crypto", "surgery", "medication",
   "diagnosis", "legal", "lawsuit", "attorney", "mortgage", "loan",
   "bankruptcy", "quit your job", "leave your partner", "divorce",
-  "business decision", "hire", "fire",
+  "hire", "fire",
+];
+
+const ANALYTICAL_SIGNALS = [
+  "consider", "one approach", "one option", "think about", "the goal",
+  "the challenge", "the opportunity", "the idea", "strategy", "analysis",
+  "implies", "indicates", "the pattern", "the reason", "this works because",
+  "the key", "the point", "what this means", "in this case", "alternatively",
+  "on the other hand", "the insight", "the tension", "you might", "could work",
+  "worth exploring", "frame this as", "the question is", "the real issue",
+  "in other words", "this suggests", "one way to", "another way",
+  "positioning", "tradeoff", "depends on", "the distinction",
 ];
 
 const URGENCY_PHRASES = [
@@ -142,12 +153,18 @@ function scoreAS(text) {
   return { score: 2, absolute, hedged };
 }
 
+function isAnalytical(text) {
+  return matchAny(text, ANALYTICAL_SIGNALS).length >= 2;
+}
+
 function scoreES(text) {
   if (hasCitationsOrData(text)) return { score: 0, matched: [] };
   const weakAuth = matchAny(text, WEAK_AUTHORITY_PHRASES);
   if (weakAuth.length > 0)      return { score: 1, matched: weakAuth };
   const hedging  = matchAny(text, HONEST_HEDGE_PHRASES);
   if (hedging.length > 0)       return { score: 2, matched: hedging };
+  // Analytical/interpretive content does not require citations
+  if (isAnalytical(text))       return { score: 2, matched: [], analytical: true };
   return { score: 3, matched: [] };
 }
 
@@ -195,7 +212,7 @@ function computeVERA(text, sensitivity = "medium") {
   const es = scoreES(text);
   const sc = scoreSC(text);
 
-  const esWeight = es.score === 3 ? 1.5 : 0.45;
+  const esWeight = (es.score === 3 && !isAnalytical(text)) ? 1.5 : 0.45;
   const weighted = (as.score * 0.25) + (es.score * esWeight) + (sc.score * 0.30);
   let score = Math.min(10, Math.max(0, Math.round((weighted / 3) * 10 * multiplier)));
 
@@ -226,7 +243,9 @@ function computeVERA(text, sensitivity = "medium") {
   if (es.score === 3) {
     breakdown.push({ label: "No evidence \u2014 stated as fact", detail: "No data, citations, or acknowledgement of uncertainty", positive: false });
   } else if (es.score === 2) {
-    breakdown.push({ label: "Acknowledges uncertainty", detail: es.matched.length ? "Phrases like: \u201c" + es.matched.slice(0,2).join("\u201d, \u201c") + "\u201d" : "", positive: true });
+    const esLabel = es.analytical ? "Reasoning and interpretation" : "Acknowledges uncertainty";
+    const esDetail = es.analytical ? "Response uses analytical language rather than hard factual claims" : (es.matched.length ? "Phrases like: \u201c" + es.matched.slice(0,2).join("\u201d, \u201c") + "\u201d" : "");
+    breakdown.push({ label: esLabel, detail: esDetail, positive: true });
   } else if (es.score === 1) {
     breakdown.push({ label: "Weak evidence", detail: es.matched.length ? "Vague authority: \u201c" + es.matched.slice(0,2).join("\u201d, \u201c") + "\u201d" : "", positive: false });
   } else {
@@ -330,6 +349,13 @@ function createBadge(veraResult) {
     actQ.innerHTML = "<strong>Should you act on this?</strong> For anything significant \u2014 money, health, legal, or relationships \u2014 consult a qualified human expert before acting.";
   }
 
+  const hallucNote = riskLevel === "HIGH" ? (() => {
+    const n = document.createElement("p");
+    n.className = "cl-note";
+    n.textContent = "Note: AI responses sometimes present invented details \u2014 names, statistics, or sources \u2014 as if they\u2019re real. Before repeating or acting on specific facts here, check them independently.";
+    return n;
+  })() : null;
+
   if (breakdown.length > 0) {
     const signalsTitle = document.createElement("p");
     signalsTitle.className = "cl-signals-title";
@@ -348,11 +374,13 @@ function createBadge(veraResult) {
 
     panel.appendChild(trustQ);
     panel.appendChild(actQ);
+    if (hallucNote) panel.appendChild(hallucNote);
     panel.appendChild(signalsTitle);
     panel.appendChild(list);
   } else {
     panel.appendChild(trustQ);
     panel.appendChild(actQ);
+    if (hallucNote) panel.appendChild(hallucNote);
   }
 
   const footer = document.createElement("p");
