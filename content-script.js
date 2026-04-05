@@ -60,11 +60,19 @@ const SC_UNIVERSAL = [
   "regardless of", "universally", "no matter what", "works for everyone",
   "applies to all", "in every case", "without exception",
 ];
+const DR_STRONG = [
+  "you should", "you must", "strongly consider", "act now",
+  "invest now", "this is the time", "don't miss", "take action",
+];
 const SENSITIVITY_MULTIPLIERS = { low: 0.7, medium: 1.0, high: 1.3 };
 
 function matchAny(text, phrases) {
   const lower = text.toLowerCase();
   return phrases.filter(p => lower.includes(p));
+}
+
+function scoreDR(text) {
+  return matchAny(text, DR_STRONG).length > 0 ? 1 : 0;
 }
 
 function scoreAS(text) {
@@ -161,7 +169,10 @@ function computeVERA(text, sensitivity) {
   const sc = scoreSC(text);
   const weighted   = (as.score * 0.25) + (es.score * 0.45) + (sc.score * 0.30);
   const multiplier = SENSITIVITY_MULTIPLIERS[sensitivity] || 1.0;
-  const score      = Math.min(10, Math.max(0, Math.round((weighted / 3) * 10 * multiplier)));
+  let score = Math.min(10, Math.max(0, Math.round((weighted / 3) * 10 * multiplier)));
+  if (scoreDR(text) === 1 && es.score >= 2) {
+    score = Math.min(10, score + 2);
+  }
   if (VERA_DEBUG) {
     console.groupCollapsed("[VERA] Final: " + score + "/10");
     console.log("W = (" + as.score + "x0.25) + (" + es.score + "x0.45) + (" + sc.score + "x0.30) = " + weighted.toFixed(3));
