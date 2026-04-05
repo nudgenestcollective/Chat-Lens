@@ -117,8 +117,13 @@ function scoreES(text) {
   const gs  = scoreGS(text);
   const fas = scoreFAS(text);
   const us  = scoreUS(text);
-  const raw   = (0.5 * gs.score) + (1.0 * fas.score) + (0.5 * us.score);
-  const score = Math.min(3, Math.max(0, Math.round(raw)));
+  const raw = (0.5 * gs.score) + (1.0 * fas.score) + (0.5 * us.score);
+  // Cautious response correction: hedging + no strong authority = lower risk
+  let adjusted = raw;
+  if (us.score === 0 && fas.score <= 1) {
+    adjusted = Math.max(0, raw - 1.5);
+  }
+  const score = Math.min(3, Math.max(0, Math.round(adjusted)));
   if (VERA_DEBUG) {
     console.groupCollapsed("[VERA] Evidence Signal: " + score + "/3 (raw: " + raw.toFixed(2) + ")");
     console.groupCollapsed("  GS Grounding: " + gs.score + "/2");
