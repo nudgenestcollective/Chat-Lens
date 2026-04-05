@@ -37,11 +37,12 @@ const FAS_HIGH_CONF = [
   "universally proven", "clinically proven",
 ];
 const US_EXPLICIT = [
-  "i could be wrong", "worth verifying", "consult a professional",
-  "seek advice", "talk to a", "speak to a", "i'm not certain",
-  "i'm not sure", "you may want to verify", "double-check",
-  "this isn't guaranteed", "results may vary", "not a substitute",
-  "your situation may differ", "i cannot guarantee",
+  "may", "might", "could", "can vary", "varies", "depends",
+  "depending on", "in many cases", "in some cases", "generally",
+  "often", "sometimes", "not always", "is not guaranteed",
+  "can depend", "tends to", "i could be wrong", "worth verifying",
+  "consult a professional", "seek advice", "i'm not certain",
+  "i'm not sure", "results may vary", "your situation may differ",
 ];
 const SC_SCOPE = [
   "if you're", "if you are", "depending on", "in your situation",
@@ -104,13 +105,9 @@ function scoreFAS(text) {
 }
 
 function scoreUS(text) {
-  const explicit = matchAny(text, US_EXPLICIT);
-  const hedged   = matchAny(text, AS_HEDGED);
-  let score;
-  if      (explicit.length > 0) score = 0;
-  else if (hedged.length   > 0) score = 1;
-  else                           score = 2;
-  return { score, matched: { explicit, hedged } };
+  const matched = matchAny(text, US_EXPLICIT);
+  const score   = matched.length > 0 ? 0 : 2;
+  return { score, matched: { explicit: matched, hedged: [] } };
 }
 
 function scoreES(text) {
