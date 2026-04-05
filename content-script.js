@@ -70,6 +70,24 @@ const LOW_PRESSURE_PATTERNS = [
 ];
 const SENSITIVITY_MULTIPLIERS = { low: 0.7, medium: 1.0, high: 1.3 };
 
+const CAUSAL_LINKS = [
+  "because", "therefore", "as a result", "leads to", "causes",
+  "results in", "which means", "due to", "this is why", "consequently",
+];
+
+function countConcreteClaims(text) {
+  let count = 0;
+  // Numbers and statistics
+  if ((text.match(/\d+/g) || []).length > 0) count++;
+  // Causal links
+  if (matchAny(text, CAUSAL_LINKS).length > 0) count++;
+  // Named systems: words with capital letters mid-sentence (rough heuristic)
+  if ((text.match(/[A-Z][a-z]{2,}/g) || []).length >= 2) count++;
+  // Percentages or ratios
+  if (/\d+%|\d+\/\d+/.test(text)) count++;
+  return count;
+}
+
 function matchAny(text, phrases) {
   const lower = text.toLowerCase();
   return phrases.filter(p => lower.includes(p));
@@ -182,6 +200,10 @@ function computeVERA(text, sensitivity) {
   // Minimum evidence floor: vague + ungrounded cannot score as safe
   if (es.score >= 2 && as.score <= 1 && sc.score <= 1) {
     score = Math.max(score, 3);
+  }
+  // Informational density floor: generic filler cannot score as perfectly safe
+  if (countConcreteClaims(text) <= 1 && es.score >= 1 && as.score <= 1) {
+    score = Math.max(score, 2);
   }
   if (VERA_DEBUG) {
     console.groupCollapsed("[VERA] Final: " + score + "/10");
