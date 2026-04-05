@@ -179,6 +179,10 @@ function computeVERA(text, sensitivity) {
   if (shouldApplyDR(text) && es.score >= 2) {
     score = Math.min(10, score + 2);
   }
+  // Minimum evidence floor: vague + ungrounded cannot score as safe
+  if (es.score >= 2 && as.score <= 1 && sc.score <= 1) {
+    score = Math.max(score, 3);
+  }
   if (VERA_DEBUG) {
     console.groupCollapsed("[VERA] Final: " + score + "/10");
     console.log("W = (" + as.score + "x0.25) + (" + es.score + "x0.45) + (" + sc.score + "x0.30) = " + weighted.toFixed(3));
