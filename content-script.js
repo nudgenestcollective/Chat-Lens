@@ -10,7 +10,7 @@ const AS_ABSOLUTE = [
   "always", "never", "definitely", "certainly", "guaranteed", "without doubt",
   "the only way", "you must", "you have to", "the best", "the worst",
   "the right way", "the correct way", "proven", "fact", "clearly",
-  "obviously", "undeniably", "without question", "absolutely",
+  "undeniably", "without question", "absolutely",
 ];
 
 const AS_HEDGED = [
