@@ -54,6 +54,9 @@ const HONEST_HEDGE_PHRASES = [
   "may be related", "may influence", "may affect", "may contribute",
   "possible connection", "possible link", "possible relationship",
   "worth noting", "it is possible", "one possibility", "could be related",
+  "indicate that", "indicates that", "indicated that", "indicated by",
+  "observational", "observationally", "anecdotally", "anecdotal",
+  "not conclusive", "inconclusive", "limited evidence", "weak evidence",
 ];
 
 const SC_UNIVERSAL = [
@@ -171,8 +174,15 @@ function hasSimulatedAuthority(text) {
 }
 
 function hasPrecisionWithoutSource(text) {
-  // Suspiciously precise numbers without a verifiable link
-  const preciseNumber = /\d+\.\d+%|n\s*=\s*\d{3,}|\d+x (improvement|increase|decrease|reduction)/i.test(text);
+  // Precise or range numbers without a verifiable link
+  const preciseNumber = (
+    /\d+\.\d+%/.test(text) ||                          // 73.4%
+    /n\s*=\s*\d{3,}/.test(text) ||                    // n=847
+    /\d+x (improvement|increase|decrease|reduction)/i.test(text) || // 3x improvement
+    /~\d+[–-]\d+%/.test(text) ||                       // ~5-12%
+    /\d+[–-]\d+%/.test(text) ||                        // 5-12%
+    /\d+% (improvement|increase|decrease|reduction|of people|of participants)/i.test(text) // 73% improvement
+  );
   const hasNoLink = !/doi\.org|https?:\/\//.test(text);
   return preciseNumber && hasNoLink;
 }
