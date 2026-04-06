@@ -28,6 +28,13 @@ const WEAK_AUTHORITY_PHRASES = [
   "many experts", "most experts", "scientists say", "doctors say",
 ];
 
+const SIMULATED_AUTHORITY_PATTERNS = [
+  "institute", "university", "foundation", "research center", "laboratory",
+  "scientists at", "researchers at", "a team at", "experts at",
+  "the study found", "the research found", "the data showed",
+  "published findings", "peer-reviewed", "clinical trial",
+];
+
 const HONEST_HEDGE_PHRASES = [
   "i'm not sure", "i don't know", "i may be wrong", "i could be mistaken",
   "you should verify", "check with a professional", "consult a doctor",
@@ -116,15 +123,32 @@ function matchAny(text, phrases) {
 }
 
 function hasCitationsOrData(text) {
-  return (
-    /\(\d{4}\)/.test(text) ||
-    /doi\.org/.test(text) ||
-    /et al\./.test(text) ||
-    /\d+%/.test(text) ||
-    /n\s*=\s*\d+/.test(text) ||
-    /p\s*[<>]\s*0\.\d+/.test(text) ||
-    /figure \d|table \d|appendix/i.test(text)
-  );
+  // A real citation requires a verifiable link OR at least two co-occurring markers
+  // Single markers alone (%, year, et al.) are too easily fabricated
+  const hasLink = /doi\.org|https?:\/\//.test(text);
+  if (hasLink) return true;
+  let markers = 0;
+  if (/\(\d{4}\)/.test(text)) markers++;
+  if (/et al\./.test(text)) markers++;
+  if (/\d+(\.\d+)?%/.test(text)) markers++;
+  if (/n\s*=\s*\d+/.test(text)) markers++;
+  if (/p\s*[<>]\s*0\.\d+/.test(text)) markers++;
+  if (/figure \d|table \d|appendix/i.test(text)) markers++;
+  return markers >= 2;
+}
+
+function hasSimulatedAuthority(text) {
+  const lower = text.toLowerCase();
+  const hasInstitution = SIMULATED_AUTHORITY_PATTERNS.some((p) => lower.includes(p));
+  const hasNoLink = !/doi\.org|https?:\/\//.test(text);
+  return hasInstitution && hasNoLink;
+}
+
+function hasPrecisionWithoutSource(text) {
+  // Suspiciously precise numbers without a verifiable link
+  const preciseNumber = /\d+\.\d+%|n\s*=\s*\d{3,}|\d+x (improvement|increase|decrease|reduction)/i.test(text);
+  const hasNoLink = !/doi\.org|https?:\/\//.test(text);
+  return preciseNumber && hasNoLink;
 }
 
 function countConcreteClaims(text) {
@@ -158,13 +182,36 @@ function isAnalytical(text) {
 }
 
 function scoreES(text) {
-  if (hasCitationsOrData(text)) return { score: 0, matched: [] };
+  // Real citations with verifiable links — genuinely safe
+  if (hasCitationsOrData(text)) {
+    // But simulated authority alongside fake-looking precision is still risky
+    if (hasSimulatedAuthority(text) && hasPrecisionWithoutSource(text)) {
+      return { score: 1, matched: [], simulatedAuthority: true };
+    }
+    return { score: 0, matched: [] };
+  }
+
+  // Simulated authority (named institution + no link) is a red flag
+  if (hasSimulatedAuthority(text)) {
+    const weakAuth = matchAny(text, WEAK_AUTHORITY_PHRASES);
+    return { score: 2, matched: weakAuth, simulatedAuthority: true };
+  }
+
+  // Vague authority phrases ("research suggests") — treated same as simulated authority
+  // They are unverifiable by definition and should not reduce risk score
   const weakAuth = matchAny(text, WEAK_AUTHORITY_PHRASES);
-  if (weakAuth.length > 0)      return { score: 1, matched: weakAuth };
-  const hedging  = matchAny(text, HONEST_HEDGE_PHRASES);
-  if (hedging.length > 0)       return { score: 2, matched: hedging };
-  // Analytical/interpretive content does not require citations
-  if (isAnalytical(text))       return { score: 2, matched: [], analytical: true };
+  if (weakAuth.length > 0) return { score: 2, matched: weakAuth, simulatedAuthority: true };
+
+  // Honest hedging is good — but don\'t let it override precision-without-source
+  const hedging = matchAny(text, HONEST_HEDGE_PHRASES);
+  if (hedging.length > 0) {
+    if (hasPrecisionWithoutSource(text)) return { score: 2, matched: hedging, precisionRisk: true };
+    return { score: 2, matched: hedging };
+  }
+
+  // Analytical/interpretive content — no citations needed
+  if (isAnalytical(text)) return { score: 2, matched: [], analytical: true };
+
   return { score: 3, matched: [] };
 }
 
@@ -243,9 +290,15 @@ function computeVERA(text, sensitivity = "medium") {
   if (es.score === 3) {
     breakdown.push({ label: "No evidence \u2014 stated as fact", detail: "No data, citations, or acknowledgement of uncertainty", positive: false });
   } else if (es.score === 2) {
-    const esLabel = es.analytical ? "Reasoning and interpretation" : "Acknowledges uncertainty";
-    const esDetail = es.analytical ? "Response uses analytical language rather than hard factual claims" : (es.matched.length ? "Phrases like: \u201c" + es.matched.slice(0,2).join("\u201d, \u201c") + "\u201d" : "");
-    breakdown.push({ label: esLabel, detail: esDetail, positive: true });
+    if (es.simulatedAuthority) {
+      breakdown.push({ label: "Mentions institutions but no source link", detail: "Names a research body or institution without a verifiable link", positive: false });
+    } else if (es.precisionRisk) {
+      breakdown.push({ label: "Specific numbers without a source", detail: "Contains precise-looking statistics that cannot be verified here", positive: false });
+    } else if (es.analytical) {
+      breakdown.push({ label: "Reasoning and interpretation", detail: "Response uses analytical language rather than hard factual claims", positive: true });
+    } else {
+      breakdown.push({ label: "Acknowledges uncertainty", detail: es.matched.length ? "Phrases like: \u201c" + es.matched.slice(0,2).join("\u201d, \u201c") + "\u201d" : "", positive: true });
+    }
   } else if (es.score === 1) {
     breakdown.push({ label: "Weak evidence", detail: es.matched.length ? "Vague authority: \u201c" + es.matched.slice(0,2).join("\u201d, \u201c") + "\u201d" : "", positive: false });
   } else {
