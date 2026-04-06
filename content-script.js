@@ -14,7 +14,7 @@ const AS_ABSOLUTE = [
 ];
 
 const AS_HEDGED = [
-  "might", "may", "could", "perhaps", "possibly", "it depends",
+  "might", "may", "could", "can", "perhaps", "possibly", "it depends",
   "generally", "typically", "in most cases", "often", "sometimes",
   "consider", "one approach", "one option", "worth exploring",
   "not always", "varies", "context-dependent",
@@ -110,6 +110,11 @@ const ANALYTICAL_SIGNALS = [
   "most people", "human behavior", "we tend", "generally speaking",
   "by nature", "natural tendency", "common pattern", "often feel",
   "people tend", "this is because", "the dynamic",
+  // Descriptive and summary language
+  "bottom line", "trade-off", "trade-offs", "depending on how",
+  "especially if", "especially when", "be aware", "keep in mind",
+  "worth noting that", "in practice", "in reality", "how you use",
+  "when used", "used correctly", "used intentionally",
 ];
 
 const META_CONTEXT_SIGNALS = [
