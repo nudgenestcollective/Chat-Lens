@@ -26,6 +26,9 @@ const WEAK_AUTHORITY_PHRASES = [
   "experts agree", "data suggests", "evidence suggests",
   "it has been shown", "it is known", "it is widely accepted",
   "many experts", "most experts", "scientists say", "doctors say",
+  "research indicates", "research confirms", "research proves",
+  "studies prove", "studies confirm", "data confirms", "data proves",
+  "has been proven", "it is proven", "proven to",
 ];
 
 const SIMULATED_AUTHORITY_PATTERNS = [
@@ -41,6 +44,16 @@ const HONEST_HEDGE_PHRASES = [
   "consult an expert", "i recommend checking", "this is not advice",
   "not financial advice", "not medical advice", "please verify",
   "i'm not an expert", "my knowledge may be outdated", "as of my training",
+  // Natural uncertainty and exploratory language
+  "it appears", "appears to", "it seems", "seems to suggest",
+  "remains under", "under study", "being studied", "under investigation",
+  "evidence is mixed", "mixed evidence", "mixed results", "mixed findings",
+  "not yet clear", "not fully understood", "not well understood",
+  "preliminary", "early evidence", "emerging evidence", "tentative",
+  "some suggest", "some evidence", "some research", "some studies",
+  "may be related", "may influence", "may affect", "may contribute",
+  "possible connection", "possible link", "possible relationship",
+  "worth noting", "it is possible", "one possibility", "could be related",
 ];
 
 const SC_UNIVERSAL = [
@@ -292,7 +305,7 @@ function computeVERA(text, sensitivity = "medium") {
   const context = classifyContext(text);
   if (context === "LOW_STAKES") score = Math.min(score, 3);
 
-  let riskLevel = score >= 7 ? "HIGH" : score >= 4 ? "MEDIUM" : "LOW";
+  let riskLevel = score >= 8 ? "HIGH" : score >= 4 ? "MEDIUM" : "LOW";
   const breakdown = [];
 
   if (as.score >= 2) {
@@ -345,7 +358,7 @@ function computeVERA(text, sensitivity = "medium") {
   const pue = scorePUE(text);
   const strongEvidence = es.score === 0 && as.score === 0;
   if (pue.triggered && context === "HIGH_STAKES" && !strongEvidence) {
-    score = Math.max(score, 7);
+    score = Math.max(score, 8);
     riskLevel = "HIGH";
   }
 
