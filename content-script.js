@@ -93,7 +93,7 @@ const HIGH_STAKES_SIGNALS = [
   "invest", "investment", "stock", "crypto", "surgery", "medication",
   "diagnosis", "legal", "lawsuit", "attorney", "mortgage", "loan",
   "bankruptcy", "quit your job", "leave your partner", "divorce",
-  "hire", "fire",
+  "hire", "get fired", "being fired", "wrongful termination",
 ];
 
 const ANALYTICAL_SIGNALS = [
@@ -126,7 +126,7 @@ const META_CONTEXT_SIGNALS = [
 ];
 
 const URGENCY_PHRASES = [
-  "right now", "act fast", "don't miss", "act immediately",
+  "act fast", "don't miss", "act immediately",
   "time is running out", "before it's too late", "do this today",
   "don't delay", "act today", "limited time", "now or never",
 ];
