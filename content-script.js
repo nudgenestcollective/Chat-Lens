@@ -283,8 +283,10 @@ function shouldApplyDR(text) {
 function classifyContext(text) {
   const low  = matchAny(text, LOW_STAKES_SIGNALS).length;
   const high = matchAny(text, HIGH_STAKES_SIGNALS).length;
-  if (high > 0) return "HIGH_STAKES";
-  if (low > 0)  return "LOW_STAKES";
+  // Require 2+ signals to avoid single-word false matches
+  // (e.g. "invest" in "investing strategies" or "fire" in "ceasefire")
+  if (high >= 2) return "HIGH_STAKES";
+  if (low > 0)   return "LOW_STAKES";
   return "DECISION";
 }
 
