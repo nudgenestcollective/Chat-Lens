@@ -89,6 +89,11 @@ const ANALYTICAL_SIGNALS = [
   "worth exploring", "frame this as", "the question is", "the real issue",
   "in other words", "this suggests", "one way to", "another way",
   "positioning", "tradeoff", "depends on", "the distinction",
+  // Behavioral and observational language — does not require citations
+  "tend to", "in general", "broadly speaking", "as a rule", "people who",
+  "most people", "human behavior", "we tend", "generally speaking",
+  "by nature", "natural tendency", "common pattern", "often feel",
+  "people tend", "this is because", "the dynamic",
 ];
 
 const URGENCY_PHRASES = [
@@ -261,7 +266,8 @@ function computeVERA(text, sensitivity = "medium") {
 
   const esWeight = (es.score === 3 && !isAnalytical(text)) ? 1.5 : 0.45;
   const weighted = (as.score * 0.25) + (es.score * esWeight) + (sc.score * 0.30);
-  let score = Math.min(10, Math.max(0, Math.round((weighted / 3) * 10 * multiplier)));
+  const maxWeighted = (3 * 0.25) + (3 * esWeight) + (3 * 0.30);
+  let score = Math.min(10, Math.max(0, Math.round((weighted / maxWeighted) * 10 * multiplier)));
 
   if (shouldApplyDR(text) && es.score >= 2) score = Math.min(10, score + 2);
   if (es.score >= 2 && as.score <= 1 && sc.score <= 1) score = Math.max(score, 3);
