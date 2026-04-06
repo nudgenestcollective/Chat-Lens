@@ -96,6 +96,14 @@ const ANALYTICAL_SIGNALS = [
   "people tend", "this is because", "the dynamic",
 ];
 
+const META_CONTEXT_SIGNALS = [
+  "classification", "result", "output", "detector", "system", "response",
+  "function", "algorithm", "model", "prediction", "label", "score",
+  "the code", "this code", "this function", "this pattern", "this approach",
+  "the answer", "the solution", "the analysis", "this example", "this case",
+  "the format", "the structure", "the logic", "the rule",
+];
+
 const URGENCY_PHRASES = [
   "right now", "act fast", "don't miss", "act immediately",
   "time is running out", "before it's too late", "do this today",
@@ -174,16 +182,24 @@ function countConcreteClaims(text) {
 function scoreAS(text) {
   const absolute = matchAny(text, AS_ABSOLUTE);
   const hedged   = matchAny(text, AS_HEDGED);
-  if (absolute.length >= 2 && hedged.length === 0) return { score: 3, absolute, hedged };
-  if (absolute.length >= 1 && hedged.length === 0) return { score: 2, absolute, hedged };
-  if (absolute.length >= 1 && hedged.length >= 1)  return { score: 2, absolute, hedged };
+  // Meta/technical context: confidence about systems, code, or responses
+  // is not the same as making a real-world factual claim
+  const inHighStakes = matchAny(text, HIGH_STAKES_SIGNALS).length > 0;
+  const meta = isMetaContext(text) && !inHighStakes;
+  if (absolute.length >= 2 && hedged.length === 0) return { score: meta ? 2 : 3, absolute, hedged };
+  if (absolute.length >= 1 && hedged.length === 0) return { score: meta ? 1 : 2, absolute, hedged };
+  if (absolute.length >= 1 && hedged.length >= 1)  return { score: meta ? 1 : 2, absolute, hedged };
   if (hedged.length >= 2)  return { score: 0, absolute, hedged };
   if (hedged.length === 1) return { score: 1, absolute, hedged };
-  return { score: 2, absolute, hedged };
+  return { score: meta ? 1 : 2, absolute, hedged };
 }
 
 function isAnalytical(text) {
   return matchAny(text, ANALYTICAL_SIGNALS).length >= 2;
+}
+
+function isMetaContext(text) {
+  return matchAny(text, META_CONTEXT_SIGNALS).length >= 1;
 }
 
 function scoreES(text) {
