@@ -222,6 +222,16 @@ function scoreAS(text) {
   return { score: meta ? 1 : 2, absolute, hedged };
 }
 
+function hasFinancialDataSimulation(text) {
+  // Many specific financial figures without a verifiable link = hallucination risk
+  const hasLink = /doi\.org|https?:\/\//.test(text);
+  if (hasLink) return false;
+  const percentMatches = (text.match(/[+\-]?\d+[\.,]?\d*%/g) || []).length;
+  const shareMatches   = (text.match(/\d+[\.,]?\d*[MBK]?\s*shares/gi) || []).length;
+  const dollarMatches  = (text.match(/\$\d+[\.,]?\d*[BMK]?/g) || []).length;
+  return percentMatches >= 5 || (percentMatches >= 3 && (shareMatches + dollarMatches) >= 1);
+}
+
 function isAnalytical(text) {
   return matchAny(text, ANALYTICAL_SIGNALS).length >= 2;
 }
@@ -383,6 +393,17 @@ function computeVERA(text, sensitivity = "medium") {
     breakdown.push({
       label: "Uses persuasion or urgency",
       detail: pue.matched.length ? "Phrases like: \u201c" + pue.matched.slice(0, 2).join("\u201d, \u201c") + "\u201d" : "",
+      positive: false,
+    });
+  }
+
+  // Financial data simulation: many specific figures without a source in high-stakes context
+  if (context === "HIGH_STAKES" && hasFinancialDataSimulation(text) && es.score >= 1) {
+    score = Math.max(score, 8);
+    riskLevel = "HIGH";
+    breakdown.push({
+      label: "Specific financial data without a source",
+      detail: "Contains many precise figures \u2014 percentages, share counts, or values \u2014 that cannot be verified here",
       positive: false,
     });
   }
