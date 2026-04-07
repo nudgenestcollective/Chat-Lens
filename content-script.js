@@ -398,7 +398,7 @@ function computeVERA(text, sensitivity = "medium") {
   }
 
   // Financial data simulation: many specific figures without a source in high-stakes context
-  if (context === "HIGH_STAKES" && hasFinancialDataSimulation(text) && es.score >= 1) {
+  if (context === "HIGH_STAKES" && hasFinancialDataSimulation(text)) {
     score = Math.max(score, 8);
     riskLevel = "HIGH";
     breakdown.push({
