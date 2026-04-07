@@ -9,7 +9,7 @@
 const AS_ABSOLUTE = [
   "always", "never", "definitely", "certainly", "guaranteed", "without doubt",
   "the only way", "you must", "you have to", "the best", "the worst",
-  "the right way", "the correct way", "proven", "fact", "clearly",
+  "the right way", "the correct way", "proven", "fact",
   "undeniably", "without question", "absolutely",
 ];
 
