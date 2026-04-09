@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chat Lens</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 280px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #111827;
+      color: #e5e7eb;
+      padding: 18px 16px 14px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .logo { font-size: 18px; }
+
+    h1 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #a5b4fc;
+    }
+
+    .subtitle {
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 18px;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    /* Toggle switch */
+    .switch { position: relative; display: inline-block; width: 42px; height: 23px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .track {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: #374151;
+      border-radius: 23px;
+      transition: background 0.25s;
+    }
+    .track::before {
+      content: "";
+      position: absolute;
+      width: 17px; height: 17px;
+      left: 3px; bottom: 3px;
+      background: #9ca3af;
+      border-radius: 50%;
+      transition: transform 0.25s, background 0.25s;
+    }
+    input:checked + .track { background: #4f46e5; }
+    input:checked + .track::before { transform: translateX(19px); background: #fff; }
+
+    .status {
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 16px;
+      min-height: 16px;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #1f2937;
+      margin: 14px 0;
+    }
+
+    /* Sensitivity */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .sensitivity-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .sens-btn {
+      flex: 1;
+      padding: 6px 0;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid #374151;
+      border-radius: 6px;
+      background: #1f2937;
+      color: #9ca3af;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .sens-btn:hover { border-color: #4f46e5; color: #a5b4fc; }
+    .sens-btn.active { background: #312e81; border-color: #4f46e5; color: #a5b4fc; }
+
+    .sens-hint {
+      font-size: 10px;
+      color: #4b5563;
+      min-height: 14px;
+    }
+
+    .footer {
+      font-size: 10px;
+      color: #374151;
+      text-align: center;
+      margin-top: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="logo">🔍</span>
+    <h1>Chat Lens</h1>
+  </div>
+  <p class="subtitle">Epistemic risk detector for AI responses</p>
+
+  <div class="row">
+    <span class="label">Extension enabled</span>
+    <label class="switch">
+      <input type="checkbox" id="enableToggle">
+      <span class="track"></span>
+    </label>
+  </div>
+  <p class="status" id="status"></p>
+
+  <hr class="divider">
+
+  <p class="section-label">Scoring sensitivity</p>
+  <div class="sensitivity-row">
+    <button class="sens-btn" data-value="low">Low</button>
+    <button class="sens-btn" data-value="medium">Medium</button>
+    <button class="sens-btn" data-value="high">High</button>
+  </div>
+  <p class="sens-hint" id="sensHint"></p>
+
+  <p class="footer">
+    Chat Lens v1.0.0 &nbsp;·&nbsp;
+    <a href="https://nudgenestcollective.github.io/aerachromeextension/privacy.html"
+       target="_blank" rel="noopener"
+       style="color:#4b5563; text-decoration:underline;">Privacy Policy</a>
+  </p>
+
+  <script src="popup.js"></script>
+</body>
+</html>

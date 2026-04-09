@@ -3,17 +3,17 @@
   "name": "Chat Lens",
   "version": "1.0.0",
   "description": "Detects confidence amplification in ChatGPT responses. Scores each message with a real-time Confidence Amplification Score (CAS).",
-  "action": {
-    "default_popup": "popup/popup.html",
-    "default_title": "Chat Lens"
-  },
+  "permissions": ["storage"],
   "content_scripts": [
     {
-      "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*",
+        "https://gemini.google.com/*"
+      ],
       "js": ["content-script.js"],
       "css": ["lens.css"],
       "run_at": "document_idle"
     }
-  ],
-  "permissions": ["storage"]
+  ]
 }
