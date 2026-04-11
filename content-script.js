@@ -730,7 +730,11 @@ function injectLensStyles() {
       font-weight: 600 !important; font-size: 13px !important; flex: 1 !important;
       color: #111827 !important; display: block !important;
     }
-    .aera-lens-toggle { font-size: 11px !important; color: #9ca3af !important; flex-shrink: 0 !important; }
+    .aera-lens-toggle {
+      font-size: 18px !important; color: #6b7280 !important; flex-shrink: 0 !important;
+      background: rgba(0,0,0,0.06) !important; border-radius: 4px !important;
+      padding: 0 5px !important; line-height: 1.2 !important;
+    }
     .aera-lens-body { padding: 12px 14px !important; background: #ffffff !important; display: block !important; }
     .aera-lens-body[hidden] { display: none !important; }
     .aera-lens-trust {
