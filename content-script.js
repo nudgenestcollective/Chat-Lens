@@ -482,8 +482,8 @@ function computeEpistemicSignals(text, domainInfo) {
   } else if (!hasGenuineCitation && !philosophical && (!isGeneralDomain || hasAdviceLanguage)) {
     signals.push({
       positive: false,
-      label: "No evidence — stated as fact",
-      detail: "No data, citations, or acknowledgement of uncertainty",
+      label: "No sources for specific claims",
+      detail: "This response includes specific figures, statistics, regulations, or requirements without citing where they come from. These details may be outdated or inaccurate — verify anything specific before acting on it.",
     });
   }
 
