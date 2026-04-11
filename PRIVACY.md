@@ -52,4 +52,4 @@ If this policy changes, the updated version will be published with a revised dat
 
 ## Contact
 
-For questions about this Privacy Policy, contact: [your contact email]
+For questions about this Privacy Policy, contact: nudgenestcollective@gmail.com
