@@ -59,9 +59,11 @@ You agree to indemnify and hold harmless Nudge Nest Collective and its developer
 
 In the event of a dispute arising from these Terms or your use of the Extension, you agree to first contact us at nudgenestcollective@gmail.com to resolve the matter informally. If the dispute cannot be resolved informally, it shall be submitted to binding arbitration in the Province of Ontario, Canada, in accordance with applicable Ontario arbitration law.
 
-## 10. Changes to the Extension
+## 10. Third-Party Platform Changes
 
-We reserve the right to modify, update, or discontinue the Extension at any time without notice. We are not liable for any interruption or loss of functionality resulting from such changes.
+Chat Lens works by reading the interface of third-party platforms including ChatGPT (chatgpt.com) and Google Gemini (gemini.google.com). These companies may update their interfaces at any time without notice, which may temporarily affect the Extension's ability to detect and score responses.
+
+If you notice that Chat Lens has stopped working on any supported platform, please notify us at **nudgenestcollective@gmail.com** and we will investigate and release a fix as quickly as possible.
 
 ## 11. Changes to These Terms
 
