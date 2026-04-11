@@ -669,17 +669,124 @@ function computeChatLens(text, sensitivity = "medium") {
 // ─── ui-component.js ─────────────────────────────────────────────────────────
 
 const BADGE_ATTR = "data-aera-lens-badge";
+const LENS_STYLE_ID = "aera-lens-styles";
+
+function injectLensStyles() {
+  if (document.getElementById(LENS_STYLE_ID)) return;
+  const s = document.createElement("style");
+  s.id = LENS_STYLE_ID;
+  s.textContent = `
+    .aera-lens-wrapper {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 13px !important;
+      line-height: 1.5 !important;
+      border-radius: 10px !important;
+      margin: 10px 0 !important;
+      overflow: hidden !important;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1), 0 2px 12px rgba(0,0,0,0.08) !important;
+      background: #ffffff !important;
+      max-width: 700px !important;
+      border: none !important;
+      display: block !important;
+    }
+    .aera-lens-header {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      width: 100% !important;
+      padding: 10px 14px !important;
+      border: none !important;
+      border-bottom: 2px solid transparent !important;
+      cursor: pointer !important;
+      text-align: left !important;
+      font-family: inherit !important;
+      font-size: 13px !important;
+      background: #f9fafb !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      outline: none !important;
+    }
+    .aera-lens-header[data-level="0"] { background: #f0fdf4 !important; border-bottom-color: #22c55e !important; }
+    .aera-lens-header[data-level="1"] { background: #fffbeb !important; border-bottom-color: #f59e0b !important; }
+    .aera-lens-header[data-level="2"] { background: #fff1f2 !important; border-bottom-color: #ef4444 !important; }
+    .aera-lens-emoji { font-size: 16px !important; flex-shrink: 0 !important; line-height: 1 !important; }
+    .aera-lens-title {
+      font-weight: 600 !important; font-size: 13px !important; flex: 1 !important;
+      color: #111827 !important; display: block !important;
+    }
+    .aera-lens-toggle { font-size: 11px !important; color: #9ca3af !important; flex-shrink: 0 !important; }
+    .aera-lens-body { padding: 12px 14px !important; background: #ffffff !important; display: block !important; }
+    .aera-lens-body[hidden] { display: none !important; }
+    .aera-lens-trust {
+      display: block !important; font-size: 13px !important; color: #374151 !important;
+      margin: 0 0 8px !important; padding: 0 !important;
+    }
+    .aera-lens-action {
+      display: block !important; font-size: 13px !important; color: #374151 !important;
+      margin: 0 0 8px !important; padding: 0 !important;
+    }
+    .aera-lens-trust strong, .aera-lens-action strong {
+      display: inline !important; color: #111827 !important; font-weight: 600 !important;
+    }
+    .aera-lens-note {
+      display: block !important; font-size: 12px !important; color: #6b7280 !important;
+      background: #f9fafb !important; border-radius: 6px !important;
+      padding: 8px 10px !important; margin: 4px 0 10px !important;
+      border-left: 3px solid #e5e7eb !important;
+    }
+    .aera-lens-why-title {
+      display: block !important; font-size: 10px !important; font-weight: 700 !important;
+      text-transform: uppercase !important; letter-spacing: 0.06em !important;
+      color: #9ca3af !important; margin: 10px 0 6px !important; padding: 0 !important;
+    }
+    .aera-lens-signals {
+      list-style: none !important; list-style-type: none !important;
+      padding: 0 !important; margin: 0 0 10px !important;
+      display: flex !important; flex-direction: column !important; gap: 5px !important;
+    }
+    .aera-lens-signal {
+      display: flex !important; align-items: flex-start !important; gap: 8px !important;
+      padding: 7px 10px !important; border-radius: 6px !important; font-size: 12px !important;
+      list-style: none !important; margin: 0 !important;
+    }
+    .aera-lens-signal--pos { background: #f0fdf4 !important; border: 1px solid #bbf7d0 !important; }
+    .aera-lens-signal--neg { background: #fff1f2 !important; border: 1px solid #fecdd3 !important; }
+    .aera-lens-signal-icon {
+      flex-shrink: 0 !important; font-size: 14px !important;
+      margin-top: 1px !important; display: block !important;
+    }
+    .aera-lens-signal-body {
+      display: flex !important; flex-direction: column !important;
+      gap: 3px !important; flex: 1 !important;
+    }
+    .aera-lens-signal-body strong {
+      display: block !important; font-weight: 600 !important;
+      color: #111827 !important; font-size: 12px !important; font-style: normal !important;
+    }
+    .aera-lens-signal-body em {
+      display: block !important; font-style: normal !important;
+      color: #6b7280 !important; font-size: 11px !important; font-weight: normal !important;
+    }
+    .aera-lens-footer {
+      display: block !important; font-size: 11px !important; font-style: italic !important;
+      color: #1a73e8 !important; margin: 8px 0 0 !important; padding: 0 !important;
+    }
+  `;
+  document.head.appendChild(s);
+}
 
 function createChatLensElement(result) {
   const { verdict, signals } = result;
+  // Derive level from emoji for header colour coding
+  const level = verdict.emoji === "🟢" ? 0 : verdict.emoji === "🟡" ? 1 : 2;
 
   const wrapper = document.createElement("div");
   wrapper.className = "aera-lens-wrapper";
-  wrapper.style.cssText = "border: 1px solid rgba(128,128,128,0.25); border-radius: 8px; margin: 6px 0; overflow: hidden;";
 
   const header = document.createElement("button");
   header.className = "aera-lens-header";
   header.setAttribute("aria-expanded", "false");
+  header.setAttribute("data-level", String(level));
   header.innerHTML = `
     <span class="aera-lens-emoji" aria-hidden="true">${verdict.emoji}</span>
     <span class="aera-lens-title">${verdict.title}</span>
@@ -736,8 +843,6 @@ function createChatLensElement(result) {
 
   const footer = document.createElement("p");
   footer.className = "aera-lens-footer";
-  footer.style.fontStyle = "italic";
-  footer.style.color = "#1a73e8";
   footer.textContent = "Chat Lens — epistemic risk detector";
   body.appendChild(footer);
 
@@ -899,6 +1004,7 @@ function startObserver() {
 
 function init() {
   if (!PLATFORM) return; // unsupported site
+  injectLensStyles();
   loadSettings(() => {
     scanExistingMessages();
     startObserver();
