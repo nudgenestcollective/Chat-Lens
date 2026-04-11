@@ -483,7 +483,7 @@ function computeEpistemicSignals(text, domainInfo) {
     signals.push({
       positive: false,
       label: "No sources for specific claims",
-      detail: "This response includes specific figures, statistics, regulations, or requirements without citing where they come from. These details may be outdated or inaccurate — verify anything specific before acting on it.",
+      detail: "This response makes claims without citing sources. Any specific details — figures, statistics, regulations, or requirements — may be outdated or inaccurate. Verify before acting on it.",
     });
   }
 
