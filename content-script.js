@@ -487,6 +487,22 @@ function computeEpistemicSignals(text, domainInfo) {
     });
   }
 
+  // Speculative business prediction — AI estimating probability of success for unproven ideas.
+  // Narrow phrase list to avoid firing on normal business advice.
+  const SPECULATIVE_PREDICTION_PHRASES = [
+    "success odds", "odds of success", "chance of success", "chances of success",
+    "likelihood of success", "near-zero chance", "probability of success",
+    "likely to succeed", "likely to fail", "succeed or fail",
+  ];
+  const hasSpeculativePrediction = SPECULATIVE_PREDICTION_PHRASES.some((p) => lower.includes(p));
+  if (hasSpeculativePrediction && !instructional) {
+    signals.push({
+      positive: false,
+      label: "Speculative success prediction",
+      detail: "The AI is estimating the odds of success for an unproven idea. These projections are guesses, not forecasts based on real data — treat them as one perspective, not a reliable prediction.",
+    });
+  }
+
   // Instructional-specific: flag AI-generated part numbers / dollar amounts
   if (instructional && hasSpecificTechnicalClaims(text)) {
     signals.push({
