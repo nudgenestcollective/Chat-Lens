@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Chat Lens — Privacy Policy</title>
+  <title>Nudge Lens — Privacy Policy</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
 
@@ -33,9 +33,7 @@
       margin-bottom: 36px;
     }
 
-    .brand-icon {
-      font-size: 28px;
-    }
+    .brand-icon { font-size: 28px; }
 
     .brand-name {
       font-size: 20px;
@@ -77,6 +75,8 @@
 
     strong { color: #111827; }
 
+    a { color: #4f46e5; }
+
     .highlight {
       background: #eff6ff;
       border-left: 3px solid #4f46e5;
@@ -107,6 +107,23 @@
 
     .no-collect-item::before { content: "✕"; color: #16a34a; font-weight: 700; }
 
+    .rights-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .right-item {
+      background: #f5f3ff;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 14px;
+      color: #4c1d95;
+    }
+
+    .right-item strong { color: #4c1d95; display: block; margin-bottom: 2px; }
+
     footer {
       margin-top: 48px;
       padding-top: 20px;
@@ -118,7 +135,7 @@
 
     @media (max-width: 600px) {
       .container { padding: 28px 24px; }
-      .no-collect { grid-template-columns: 1fr; }
+      .no-collect, .rights-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -126,59 +143,82 @@
   <div class="container">
     <div class="brand">
       <span class="brand-icon">🔍</span>
-      <span class="brand-name">Chat Lens</span>
+      <span class="brand-name">Nudge Lens</span>
     </div>
 
     <h1>Privacy Policy</h1>
-    <p class="updated">Last updated: April 8, 2026</p>
+    <p class="updated">Last updated: April 10, 2026</p>
 
-    <h2>Overview</h2>
-    <p>Chat Lens is a Chrome browser extension that analyzes AI-generated responses for epistemic risk. This Privacy Policy explains what data the extension accesses and how it is handled.</p>
+    <h2>1. About This Policy</h2>
+    <p>This Privacy Policy explains how Nudge Lens ("the Extension"), developed and operated by <strong>Nudge Nest Collective</strong>, handles information when you use the Extension. This policy is intended to comply with the <em>Personal Information Protection and Electronic Documents Act</em> (PIPEDA, Canada), Ontario privacy law, the California Consumer Privacy Act (CCPA), and applicable United States federal privacy requirements.</p>
+    <p>By installing or using the Extension, you acknowledge that you have read and understood this Privacy Policy.</p>
 
-    <h2>Data We Access</h2>
-    <p>When you use Chat Lens on ChatGPT (chatgpt.com) or Google Gemini (gemini.google.com), the extension reads the text content of AI-generated responses displayed on those pages for the sole purpose of computing an epistemic risk score.</p>
+    <h2>2. What the Extension Accesses</h2>
+    <p>When you use Nudge Lens on ChatGPT (chatgpt.com) or Google Gemini (gemini.google.com), the Extension reads the text content of AI-generated responses displayed on those pages. This reading is performed <strong>locally within your browser</strong> for the sole purpose of computing an epistemic risk score. This text is never copied, stored, or transmitted anywhere.</p>
 
-    <h2>How Your Data Is Handled</h2>
-    <div class="highlight">All processing is local. Chat Lens operates entirely within your browser — no data ever leaves your device.</div>
+    <h2>3. How Your Data Is Handled</h2>
+    <div class="highlight">All processing is local. Nudge Lens operates entirely within your browser — no data ever leaves your device.</div>
     <p>The text content of AI responses is:</p>
     <ul>
       <li>Read from the page you are currently viewing</li>
-      <li>Analyzed locally using pattern-matching algorithms built into the extension</li>
+      <li>Analyzed locally using pattern-matching algorithms built into the Extension</li>
       <li>Never transmitted to any external server, API, or third party</li>
       <li>Never stored beyond the current browser session</li>
     </ul>
 
-    <h2>Extension Settings</h2>
-    <p>Chat Lens stores two settings using Chrome's built-in <code>chrome.storage.sync</code>:</p>
+    <h2>4. Extension Settings</h2>
+    <p>Nudge Lens stores two user-preference settings using Chrome's built-in <code>chrome.storage.sync</code>:</p>
     <ul>
-      <li>Whether the extension is enabled (on/off)</li>
+      <li>Whether the Extension is enabled (on/off)</li>
       <li>Sensitivity level (low / medium / high)</li>
     </ul>
-    <p>These settings contain no personal information and are synced across your Chrome profile using Google's Chrome sync infrastructure, subject to <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's own privacy policy</a>.</p>
+    <p>These settings contain no personal information. They are synced across your Chrome profile using Google's Chrome sync infrastructure, subject to <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a>. We do not access, read, or transmit these settings.</p>
 
-    <h2>Data We Do Not Collect</h2>
+    <h2>5. Data We Do Not Collect</h2>
     <div class="no-collect">
       <div class="no-collect-item">Personal information</div>
       <div class="no-collect-item">Browsing history</div>
       <div class="no-collect-item">Chat conversation content</div>
       <div class="no-collect-item">Cookies or trackers</div>
       <div class="no-collect-item">Location data</div>
-      <div class="no-collect-item">Any data leaving your device</div>
+      <div class="no-collect-item">Device identifiers</div>
     </div>
 
-    <h2>Third-Party Services</h2>
-    <p>Chat Lens does not integrate with or transmit data to any third-party analytics, advertising, or tracking services.</p>
+    <h2>6. Third-Party Services</h2>
+    <p>Nudge Lens does not integrate with or transmit data to any third-party analytics, advertising, or tracking services.</p>
 
-    <h2>Children's Privacy</h2>
-    <p>Chat Lens does not knowingly collect any information from children under 13.</p>
+    <h2>7. Your Privacy Rights</h2>
+    <p>Although Nudge Lens does not collect personal information, we are committed to transparency. Under applicable law, you may have the right to:</p>
+    <div class="rights-grid">
+      <div class="right-item"><strong>Access</strong>Confirm whether we hold personal information about you</div>
+      <div class="right-item"><strong>Correction</strong>Request correction of inaccurate information</div>
+      <div class="right-item"><strong>Deletion</strong>Request deletion of your personal information</div>
+      <div class="right-item"><strong>Complaint</strong>File a complaint with a privacy authority</div>
+    </div>
+    <p>Since Nudge Lens does not collect or retain personal information, there is no personal data to access, correct, or delete. For questions, contact <a href="mailto:nudgenestcollective@gmail.com">nudgenestcollective@gmail.com</a>.</p>
+    <p><strong>Canadian residents:</strong> You may contact the Office of the Privacy Commissioner of Canada at <a href="https://www.priv.gc.ca" target="_blank" rel="noopener">www.priv.gc.ca</a>.</p>
+    <p><strong>California residents (CCPA):</strong> You have the right to know what personal information is collected, the right to delete it, and the right to opt out of its sale. Nudge Lens does not collect or sell personal information.</p>
 
-    <h2>Changes to This Policy</h2>
-    <p>If this policy changes, the updated version will be published here with a revised date.</p>
+    <h2>8. Children's Privacy</h2>
+    <p>Nudge Lens is not directed at children under the age of 13. We do not knowingly collect any personal information from children under 13. If you believe your child has provided personal information, contact us at <a href="mailto:nudgenestcollective@gmail.com">nudgenestcollective@gmail.com</a>.</p>
 
-    <h2>Contact</h2>
-    <p>For questions about this Privacy Policy, contact: <a href="mailto:nudgenestcollective@gmail.com">nudgenestcollective@gmail.com</a></p>
+    <h2>9. Do Not Track</h2>
+    <p>Nudge Lens does not track users across websites and does not alter its behaviour based on Do Not Track (DNT) signals, as the Extension does not engage in any tracking.</p>
 
-    <footer>Chat Lens &mdash; Epistemic risk detector for AI responses</footer>
+    <h2>10. Data Security</h2>
+    <p>As Nudge Lens does not collect or transmit personal information, there is no personal data for us to secure. Your Extension settings are protected by Google's Chrome sync security infrastructure.</p>
+
+    <h2>11. Governing Law</h2>
+    <p>This Privacy Policy is governed by the laws of the Province of Ontario, Canada, and applicable federal Canadian law (PIPEDA). Where required, we also comply with applicable United States federal and state privacy laws.</p>
+
+    <h2>12. Changes to This Policy</h2>
+    <p>If this policy changes materially, the updated version will be published here with a revised date. Continued use of the Extension after changes constitutes acceptance of the revised policy.</p>
+
+    <h2>13. Contact</h2>
+    <p><strong>Nudge Nest Collective</strong><br>
+    <a href="mailto:nudgenestcollective@gmail.com">nudgenestcollective@gmail.com</a></p>
+
+    <footer>Nudge Lens &mdash; Epistemic risk detector for AI responses &mdash; Nudge Nest Collective</footer>
   </div>
 </body>
 </html>
