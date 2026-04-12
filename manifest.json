@@ -1,9 +1,11 @@
 {
   "manifest_version": 3,
-  "name": "Chat Lens",
+  "name": "Nudge Lens",
   "version": "1.0.0",
-  "description": "Detects confidence amplification in ChatGPT responses. Scores each message with a real-time Confidence Amplification Score (CAS).",
-  "permissions": ["storage"],
+  "description": "Detects epistemic risk in ChatGPT and Gemini responses. Green, amber, or red trust rating helps you think critically about AI.",
+  "permissions": [
+    "storage"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_title": "Chat Lens",
@@ -27,8 +29,12 @@
         "https://chat.openai.com/*",
         "https://gemini.google.com/*"
       ],
-      "js": ["content-script.js"],
-      "css": ["lens.css"],
+      "js": [
+        "content-script.js"
+      ],
+      "css": [
+        "lens.css"
+      ],
       "run_at": "document_idle"
     }
   ]

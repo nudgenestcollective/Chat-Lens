@@ -567,7 +567,7 @@ const VERDICT_COPY = [
     title: "Looks reasonable to trust",
     trust: "This response uses careful language and doesn't overstate its confidence.",
     action: "Likely fine for everyday decisions. For major choices, still good to double-check.",
-    note: "Note: Chat Lens scores how confidently a response is written — not whether the facts are correct. Even a well-rated response may contain details that sound plausible but were made up. For anything factual that matters, verify it independently.",
+    note: "Note: Nudge Lens scores how confidently a response is written — not whether the facts are correct. Even a well-rated response may contain details that sound plausible but were made up. For anything factual that matters, verify it independently.",
   },
   {
     emoji: "🟡",
@@ -863,7 +863,7 @@ function createChatLensElement(result) {
 
   const footer = document.createElement("p");
   footer.className = "aera-lens-footer";
-  footer.textContent = "Chat Lens — epistemic risk detector";
+  footer.textContent = "Nudge Lens — epistemic risk detector";
   body.appendChild(footer);
 
   header.addEventListener("click", () => {
